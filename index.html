@@ -206,13 +206,18 @@ const SPECIES=[
  {id:'oak',name:'English Oak',rarity:'Common',price:20,shape:'round',trunk:'#5d4632',col:['#8cb55a','#4f7d32','#b8742e','#7a5a3a'],fol:[.85,1,.9,0],desc:'Broad and sturdy; a dependable first tree.'},
  {id:'birch',name:'Silver Birch',rarity:'Common',price:25,shape:'narrow',trunk:'#e6e0d2',col:['#a8cc6a','#6f9a3e','#e2b93b','#8a6a3a'],fol:[.8,1,.85,0],desc:'Pale bark and slender crowns that turn butter yellow.'},
  {id:'maple',name:'Sugar Maple',rarity:'Common',price:30,shape:'round',trunk:'#5a4232',col:['#9cc062','#4d7a34','#d2482a','#7a4a2a'],fol:[.85,1,.95,0],desc:'Unremarkable in summer; blazing red in autumn.'},
+ {id:'apple',name:'Apple Tree',rarity:'Common',price:35,shape:'round',trunk:'#5e4a36',col:['#f2dde0','#4f7d32','#b0782e','#7a5a3a'],fol:[.9,1,.85,0],desc:'White-pink blossom in spring on a classic orchard shape.'},
  {id:'pine',name:'Scots Pine',rarity:'Uncommon',price:45,shape:'cone',trunk:'#4d3a2a',col:['#456f3c','#365e34','#3d5c36','#66806a'],fol:[1,1,1,1],desc:'Evergreen; it keeps the garden green through winter.'},
  {id:'willow',name:'Weeping Willow',rarity:'Uncommon',price:70,shape:'willow',trunk:'#6a5638',col:['#b8d46a','#7ea84a','#c9b44a','#8a7a4a'],fol:[.8,1,.8,0],desc:'Long trailing strands that sway like brushstrokes.'},
+ {id:'paperbark',name:'Paperbark Cherry',rarity:'Uncommon',price:80,shape:'round',trunk:'#7a2e22',col:['#f4eee8','#4f7a34','#d07a2a','#7a4a3a'],fol:[.95,1,.85,0],desc:'Glossy copper bark that peels in ribbons; white flowers in spring.'},
  {id:'cherry',name:'Yoshino Cherry',rarity:'Rare',price:110,shape:'round',wide:true,trunk:'#5a3a32',col:['#f4b6c8','#5e8a3c','#c4562e','#7a4a3a'],fol:[1,.95,.85,0],desc:'A cloud of pink blossom each spring.'},
  {id:'ginkgo',name:'Ginkgo',rarity:'Rare',price:140,shape:'ginkgo',trunk:'#6a5a44',col:['#a6c95a','#6d9a3a','#f0c42a','#9a8a3a'],fol:[.85,1,1,0],desc:'A living fossil with fan-shaped leaves of pure gold.'},
+ {id:'trumpet',name:'Yellow Trumpet Tree',rarity:'Rare',price:160,shape:'round',wide:true,trunk:'#6a5a46',col:['#f2c72a','#5a8a3a','#8a9a3a','#6a6a3a'],fol:[1,.95,.85,0],desc:'Covered in golden trumpet-shaped flowers each spring.'},
  {id:'jmaple',name:'Japanese Maple',rarity:'Exotic',price:220,shape:'umbrella',trunk:'#4a3a32',col:['#b0362e','#7e2c2c','#de2c1c','#6a2a22'],fol:[.9,1,1,0],desc:'Low, layered and crimson nearly all year.'},
+ {id:'poinciana',name:'Royal Poinciana',rarity:'Exotic',price:260,shape:'spread',trunk:'#7a6a58',col:['#6a9a3a','#d8401c','#6a8a34','#7a6a3a'],fol:[.9,1,.9,0],desc:'A flat, spreading crown that blazes scarlet in summer.'},
  {id:'jacaranda',name:'Jacaranda',rarity:'Exotic',price:300,shape:'round',wide:true,trunk:'#5a4636',col:['#9a7ad6','#5f8a3c','#b39a3a','#7a6a4a'],fol:[1,.95,.8,0],desc:'Spring brings a haze of violet flowers.'},
  {id:'dragon',name:'Dragon Blood Tree',rarity:'Exotic',price:380,shape:'dragon',trunk:'#8a7a62',col:['#4f7a3a','#3f6c34','#4a7034','#5c7a52'],fol:[1,1,1,1],desc:'An upturned umbrella from the island of Socotra; evergreen.'},
+ {id:'baobab',name:'Baobab',rarity:'Exotic',price:450,shape:'baobab',trunk:'#9a8a78',col:['#8ab05a','#5f8a3a','#9a8a4a','#7a6a4a'],fol:[.65,.85,.5,0],desc:'A colossal bottle-shaped trunk with branches like roots.'},
  {id:'sequoia',name:'Giant Sequoia',rarity:'Legendary',price:600,shape:'tallcone',trunk:'#8a4a32',col:['#3e6638','#345c32','#3b5c34','#5f7a62'],fol:[1,1,1,1],desc:'The largest tree on Earth; it towers over everything.'}
 ];
 const SP={}; SPECIES.forEach(s=>SP[s.id]=s);
@@ -433,6 +438,13 @@ function makeTree(sp,seed,mats){
         m.rotation.x=Math.PI;m.rotation.z=(R()-.5)*0.15;m.position.set(Math.cos(a)*r,2.1,Math.sin(a)*r);m.userData.base=m.scale.clone();m.userData.sway=R()*6;g.add(m);fol.push(m);}break;}
     case 'umbrella':{trunk(1.0,0.13,0.22);const n=4;for(let i=0;i<n;i++){const e=branch(V(0,0.85,0),i/n*Math.PI*2+R()*0.5,0.95,1.2,0.09);blob(e,0.95+R()*0.2,0.45);
       blob(V(e.x*0.55,e.y+0.45,e.z*0.55),0.75,0.45);}blob(V(0,2.25,0),1.0,0.45);break;}
+    case 'spread':{trunk(1.9,0.16,0.28);const n=5;for(let i=0;i<n;i++){const e=branch(V(0,1.6,0),i/n*Math.PI*2+R()*0.4,1.0+R()*0.15,2.0,0.12);
+      blob(e,1.1+R()*0.2,0.42);blob(V(e.x*0.55,e.y+0.25,e.z*0.55),0.95,0.42);}blob(V(0,3.2,0),1.3,0.45);break;}
+    case 'baobab':{const pts=[[1.25,0],[1.45,0.3],[1.42,0.9],[1.25,2],[1.02,3.2],[0.78,3.9],[0.55,4.25],[0,4.35]].map(([r,y])=>new THREE.Vector2(r,y));
+      g.add(new THREE.Mesh(new THREE.LatheGeometry(pts,14),T));
+      for(let i=0;i<7;i++){const yaw=i/7*Math.PI*2+R()*0.4;const e=branch(V(0,4.05,0),yaw,0.9+R()*0.3,1.2+R()*0.4,0.22);
+        const e2=branch(e,yaw+0.4,0.5,0.6,0.1);blob(e2,0.55+R()*0.15,0.6);}
+      blob(V(0,4.9,0),0.8,0.6);break;}
     case 'dragon':{trunk(2.2,0.24,0.32);for(let i=0;i<7;i++){const e=branch(V(0,2.0,0),i/7*Math.PI*2+R()*0.3,0.45+R()*0.12,1.5,0.12);
       branch(e,i/7*Math.PI*2+0.5,0.5,0.5,0.06);}
       const crown=new THREE.Mesh(new THREE.SphereGeometry(2.5,16,8,0,Math.PI*2,0,Math.PI/2),F);crown.scale.set(1,0.42,1);crown.position.y=3.3;crown.userData.base=crown.scale.clone();g.add(crown);fol.push(crown);break;}
@@ -651,7 +663,7 @@ const ICON={
  dragon:'<path d="M4 16 Q22 4 40 16 Z"/><path d="M21 40 V20 M22 26 L12 16 M22 26 L32 16" stroke-width="2.6" fill="none"/>'
 };
 /* ---------- nursery thumbnails: detailed, rotating 3D trees ---------- */
-const SHOWCASE={cherry:0,jacaranda:0,maple:2,ginkgo:2,jmaple:2};
+const SHOWCASE={cherry:0,jacaranda:0,maple:2,ginkgo:2,jmaple:2,apple:0,paperbark:0,trumpet:0};
 function canvasTex(size,draw){const c=document.createElement('canvas');c.width=c.height=size;draw(c.getContext('2d'),size);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
 const barkTex=canvasTex(128,(g,s)=>{g.fillStyle='#8c8c8c';g.fillRect(0,0,s,s);
   for(let i=0;i<260;i++){const x=Math.random()*s,y=Math.random()*s,w=1+Math.random()*3,h=12+Math.random()*44,v=70+Math.random()*130|0;
@@ -660,6 +672,9 @@ barkTex.repeat.set(2,2);
 const birchTex=canvasTex(128,(g,s)=>{g.fillStyle='#f4f2ec';g.fillRect(0,0,s,s);
   for(let i=0;i<70;i++){const x=Math.random()*s,y=Math.random()*s,w=6+Math.random()*22,v=40+Math.random()*60|0;
     g.fillStyle=`rgb(${v},${v},${v})`;g.fillRect(x,y,w,1.5+Math.random()*2.5);g.fillRect(x-s,y,w,2);}});
+const paperTex=canvasTex(128,(g,s)=>{g.fillStyle='#8a3a26';g.fillRect(0,0,s,s);
+  for(let y=0;y<s;y+=4+Math.random()*6){g.fillStyle=Math.random()<0.5?'#c06a40':'#a04a2e';g.fillRect(0,y,s,2+Math.random()*3);}
+  for(let i=0;i<60;i++){const x=Math.random()*s,y=Math.random()*s;g.fillStyle='rgba(50,20,12,.7)';g.fillRect(x,y,8+Math.random()*16,1.5);}});
 const leafTex=canvasTex(256,(g,s)=>{g.fillStyle='#a8a8a8';g.fillRect(0,0,s,s);
   for(let i=0;i<1400;i++){const x=Math.random()*s,y=Math.random()*s,v=110+Math.random()*145|0;
     g.fillStyle=`rgb(${v},${v},${v})`;g.save();g.translate(x,y);g.rotate(Math.random()*6.28);g.beginPath();g.ellipse(0,0,4+Math.random()*3,1.6+Math.random(),0,0,6.28);g.fill();g.restore();}});
@@ -688,8 +703,8 @@ function thumbModel(sp){
   const base=new THREE.Color(sp.col[si]);
   const side=sp.shape==='dragon'?THREE.DoubleSide:THREE.FrontSide;
   const leaf=c=>new THREE.MeshPhongMaterial({color:c,map:leafTex,shininess:10,specular:0x181818,side});
-  const birch=sp.id==='birch';
-  const mats={T:new THREE.MeshPhongMaterial({color:birch?'#ffffff':new THREE.Color(sp.trunk).lerp(new THREE.Color('#ffffff'),0.35),map:birch?birchTex:barkTex,shininess:3}),
+  const birch=sp.id==='birch', paper=sp.id==='paperbark';
+  const mats={T:new THREE.MeshPhongMaterial({color:(birch||paper)?'#ffffff':new THREE.Color(sp.trunk).lerp(new THREE.Color('#ffffff'),0.35),map:birch?birchTex:(paper?paperTex:barkTex),shininess:paper?40:3,specular:paper?0x553322:0x111111}),
     F:leaf(base),light:leaf(base.clone().lerp(new THREE.Color('#fff4c0'),0.22)),dark:leaf(base.clone().multiplyScalar(0.62))};
   const {group,fol}=makeTree(sp,4242+sp.price,mats);
   const up=new THREE.Vector3();
