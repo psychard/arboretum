@@ -547,11 +547,21 @@ function randGardenPoint(){
 function spawnVisitor(){
   const p=makePerson(); const start=new THREE.Vector3((Math.random()-.5)*1.4,0,44);
   p.g.position.copy(start); scene.add(p.g);
-  const path=[new THREE.Vector3((Math.random()-.5)*1.4,0,33)];
-  const stops=2+Math.floor(Math.random()*3); for(let i=0;i<stops;i++) path.push(randGardenPoint());
+  const path=[new THREE.Vector3((Math.random()-.5)*1.4,0,33)], acts={}, stopIdx=new Set();
+  const stops=2+Math.floor(Math.random()*3);
+  for(let i=0;i<stops;i++){
+    const usable=decors.filter(d=>d.d.act);
+    if(usable.length&&Math.random()<0.55){
+      const d=usable[Math.floor(Math.random()*usable.length)];
+      if(d.d.act==='bridge'){let a=localToWorld(d,0,-2.9),b=localToWorld(d,0,2.9);if(Math.random()<0.5)[a,b]=[b,a];path.push(a,b);continue;}
+      if(d.d.act==='sit'){const si=Math.floor(Math.random()*d.d.seats.length),st=d.d.seats[si];
+        path.push(localToWorld(d,st[0]+Math.sin(st[2])*0.9,st[1]+Math.cos(st[2])*0.9));acts[path.length-1]={type:'sit',d,si};continue;}
+      if(d.d.act==='look'){const a=Math.random()*6.28,r=d.d.rad+0.5;path.push(new THREE.Vector3(d.x+Math.cos(a)*r,0,d.z+Math.sin(a)*r));acts[path.length-1]={type:'look',d};continue;}
+    }
+    path.push(randGardenPoint()); stopIdx.add(path.length-1);
+  }
   path.push(new THREE.Vector3((Math.random()-.5)*1.4,0,33), new THREE.Vector3((Math.random()-.5)*1.4,0,46));
-  const v={p,path,i:0,pause:0,phase:Math.random()*6,speed:1.2+Math.random()*0.4,stops:new Set()};
-  for(let i=1;i<=stops;i++) v.stops.add(i);
+  const v={p,path,i:0,pause:0,phase:Math.random()*6,speed:1.2+Math.random()*0.4,stops:stopIdx,acts,sitting:null,looking:false};
   people.push(v);
   state.money+=TICKET; state.earned+=TICKET; state.visitorsTotal++;
   floatText('+$'+TICKET, new THREE.Vector3(0,3.6,35));
@@ -563,19 +573,45 @@ function walkTo(obj,target,speed,dt){
   const want=Math.atan2(d.x,d.z); let diff=want-obj.rotation.y; diff=Math.atan2(Math.sin(diff),Math.cos(diff)); obj.rotation.y+=diff*Math.min(1,dt*6);
   return false;
 }
+function localToWorld(d,lx,lz){const c=Math.cos(d.r),sn=Math.sin(d.r);return new THREE.Vector3(d.x+lx*c+lz*sn,0,d.z-lx*sn+lz*c);}
+function groundY(x,z){let y=0;for(const d of decors){const id=d.d.id;if(id!=='bridge'&&id!=='gazebo')continue;const dx=x-d.x,dz=z-d.z;
+  if(id==='gazebo'){if(dx*dx+dz*dz<2.3*2.3)y=Math.max(y,0.3);continue;}
+  const c=Math.cos(d.r),sn=Math.sin(d.r),lx=dx*c-dz*sn,lz=dx*sn+dz*c;
+  if(Math.abs(lx)<0.6&&Math.abs(lz)<1.9)y=Math.max(y,0.24+0.55*Math.cos(lz/1.9*Math.PI/2));}return y;}
+function sitDown(v,a){
+  const d=a.d,st=d.d.seats[a.si];
+  if(!decors.includes(d)||d.occ[a.si]){v.pause=1.5+Math.random()*2;return;}
+  d.occ[a.si]=v; v.sitting=a;
+  const p=localToWorld(d,st[0],st[1]),g=v.p.g; g.position.set(p.x,d.d.seatY-0.8*g.scale.y,p.z); g.rotation.y=st[2]+d.r;
+  v.p.legs.forEach(l=>l.rotation.x=-1.15); v.p.arms.forEach(m=>m.rotation.x=-0.55);
+  v.pause=7+Math.random()*10;
+}
+function standUp(v){
+  const a=v.sitting; v.sitting=null; if(a.d.occ[a.si]===v) a.d.occ[a.si]=null;
+  const st=a.d.d.seats[a.si],p=localToWorld(a.d,st[0]+Math.sin(st[2])*0.6,st[1]+Math.cos(st[2])*0.6);
+  v.p.g.position.set(p.x,0,p.z);
+}
 function updatePeople(dt){
+  const now=performance.now();
   for(let k=people.length-1;k>=0;k--){
-    const v=people[k];
-    if(v.pause>0){v.pause-=dt;v.p.legs.forEach(l=>l.rotation.x*=0.85);v.p.arms.forEach(a=>a.rotation.x*=0.85);
-      v.p.head.rotation.y=Math.sin(performance.now()/900+k)*0.5;v.p.head.rotation.x=-0.12+Math.sin(performance.now()/1400+k)*0.1;continue;}
+    const v=people[k], g=v.p.g;
+    if(v.pause>0){v.pause-=dt;
+      if(!v.sitting){v.p.legs.forEach(l=>l.rotation.x*=0.85);v.p.arms.forEach(m=>m.rotation.x*=0.85);}
+      v.p.head.rotation.y=Math.sin(now/900+k)*(v.looking?0.25:0.5);
+      v.p.head.rotation.x=(v.looking?0.4:-0.12)+Math.sin(now/1400+k)*0.1;
+      if(v.pause<=0){if(v.sitting)standUp(v);v.looking=false;}
+      continue;}
     v.phase+=dt*v.speed*6; const sw=Math.sin(v.phase)*0.5; v.p.legs[0].rotation.x=sw; v.p.legs[1].rotation.x=-sw;
     v.p.arms[0].rotation.x=-sw*0.75; v.p.arms[1].rotation.x=sw*0.75; v.p.head.rotation.x*=0.9;
-    v.p.g.position.y=Math.abs(Math.sin(v.phase))*0.04;
-    if(walkTo(v.p.g,v.path[v.i],v.speed,dt)){
-      if(v.stops.has(v.i)) v.pause=2.5+Math.random()*5;
+    if(walkTo(g,v.path[v.i],v.speed,dt)){
+      const a=v.acts[v.i];
+      if(a&&a.type==='sit') sitDown(v,a);
+      else if(a&&a.type==='look'){v.looking=true;v.pause=3+Math.random()*4;g.rotation.y=Math.atan2(a.d.x-g.position.x,a.d.z-g.position.z);}
+      else if(v.stops.has(v.i)) v.pause=2.5+Math.random()*5;
       v.i++;
-      if(v.i>=v.path.length){scene.remove(v.p.g);people.splice(k,1);}
+      if(v.i>=v.path.length){if(v.sitting)standUp(v);scene.remove(g);people.splice(k,1);continue;}
     }
+    if(!v.sitting) g.position.y=groundY(g.position.x,g.position.z)+Math.abs(Math.sin(v.phase))*0.04;
   }
 }
 
@@ -674,6 +710,10 @@ const DECOR=[
  {id:'gazebo',name:'Gazebo',price:250,rad:2.7,w:1.6,desc:'An open pavilion with a painted roof.'}
 ];
 const DC={}; DECOR.forEach(d=>{d.kind='decor';d.seasons=[0,1,2,3];DC[d.id]=d;});
+Object.assign(DC.bench,{act:'sit',seatY:0.55,seats:[[-0.45,-0.02,0],[0.45,-0.02,0]]});
+Object.assign(DC.picnic,{act:'sit',seatY:0.5,seats:[[-0.5,0.72,Math.PI],[0.5,0.72,Math.PI],[-0.5,-0.72,0],[0.5,-0.72,0]]});
+Object.assign(DC.gazebo,{act:'sit',seatY:0.66,seats:[[-0.35,1.42,Math.PI],[0.35,1.42,Math.PI],[-0.35,-1.42,0],[0.35,-1.42,0]]});
+['flowers','birdbath','minipond'].forEach(id=>DC[id].act='look'); DC.bridge.act='bridge';
 const DM={wood:mat('#6a4a30'),dark:mat('#4a3424'),stone:mat('#a59c8c'),iron:mat('#2e2e33'),soil:mat('#5a4030'),reed:mat('#5a7a3a'),roof:mat('#8a3a2e'),
   glow:new THREE.MeshBasicMaterial({color:'#ffe2a0'}),flower:mat('#e86a8a')};
 const FLOWER_C=toCols(['#e86a8a','#e8c03a','#d0702a','#8a7a6a']);
@@ -715,7 +755,7 @@ function makeDecor(id){
   shadowAll(g); return g;
 }
 function addDecor(id,x,z,r){const d=DC[id];if(!d)return null;const g=makeDecor(id);g.position.set(x,0,z);g.rotation.y=r||0;
-  const o={d,group:g,x,z,r:r||0};g.userData.decor=o;decorRoot.add(g);decors.push(o);return o;}
+  const o={d,group:g,x,z,r:r||0,occ:[]};g.userData.decor=o;decorRoot.add(g);decors.push(o);return o;}
 
 /* ---------- planting ---------- */
 let stage=STAGES[0], picked=null, ghostPos=null, pickRot=0, shopTab='trees';
