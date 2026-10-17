@@ -145,7 +145,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <div id="hud">
   <div class="row">
     <div class="chip num" id="money" aria-label="Money">$100</div>
-    <button class="chip" id="shopBtn">Plant trees</button>
+    <button class="chip" id="shopBtn">Shop</button>
   </div>
   <div class="row">
     <div class="chip" id="visChip" title="Visitors in the arboretum">👥 <span class="num" id="vis">0</span></div>
@@ -158,6 +158,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <div id="banner" role="status">
   <p id="bannerTxt"></p>
   <button class="btn primary" id="plantBtn" style="display:none">Plant</button>
+  <button class="btn" id="rotBtn" style="display:none">Rotate</button>
   <button class="btn" id="doneBtn">Done</button>
 </div>
 
@@ -166,9 +167,10 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <div id="toasts"></div>
 
 <div id="shop" aria-hidden="true">
-  <div class="shop-head"><h2>Nursery</h2><span class="wallet num" id="wallet">$100</span><button class="btn" id="closeShop">Close</button></div>
+  <div class="shop-head"><h2>Shop</h2><span class="wallet num" id="wallet">$100</span><button class="btn" id="closeShop">Close</button></div>
+  <div class="seg" id="tabs"></div>
   <div class="seg" id="seg"></div>
-  <p class="stage-note">Stock changes with every season. Older trees cost more but draw visitors sooner; rare trees draw more of them.</p>
+  <p class="stage-note" id="note">Stock changes with every season. Older trees cost more but draw visitors sooner; rare trees draw more of them.</p>
   <div id="list"></div>
   <div class="stats" id="stats"></div>
 </div>
@@ -176,7 +178,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <div id="intro">
   <div class="card">
     <h1>The Painted Arboretum</h1>
-    <p>You have $100 and an empty meadow. Buy trees from the nursery and tap the ground to plant them. Each visitor buys a $25 ticket.</p>
+    <p>You have $100 and an empty meadow. Buy trees and garden decorations from the shop, then tap the ground to place them. Each visitor buys a $25 ticket.</p>
     <p>Trees grow while you play, and the seasons turn slowly; each one lasts an hour. Keep an eye out for the gray cat, who wanders by every five minutes.</p>
     <p>Use the joystick in the corner to circle the garden, or drag the scene. Pinch or use + and − to zoom.</p>
     <button class="btn primary" id="begin">Begin</button>
@@ -220,25 +222,47 @@ const SPECIES=[
  {id:'jacaranda',name:'Jacaranda',rarity:'Exotic',price:300,shape:'round',wide:true,trunk:'#5a4636',col:['#9a7ad6','#5f8a3c','#b39a3a','#7a6a4a'],fol:[1,.95,.8,0],desc:'Spring brings a haze of violet flowers.'},
  {id:'dragon',name:'Dragon Blood Tree',rarity:'Exotic',price:380,shape:'dragon',trunk:'#8a7a62',col:['#4f7a3a','#3f6c34','#4a7034','#5c7a52'],fol:[1,1,1,1],desc:'An upturned umbrella from the island of Socotra; evergreen.'},
  {id:'baobab',name:'Baobab',rarity:'Exotic',price:450,shape:'baobab',trunk:'#9a8a78',col:['#8ab05a','#5f8a3a','#9a8a4a','#7a6a4a'],fol:[.65,.85,.5,0],desc:'A colossal bottle-shaped trunk with branches like roots.'},
+ {id:'redoak',name:'Northern Red Oak',rarity:'Common',price:22,shape:'round',trunk:'#56463a',col:['#9ab85a','#3f6a2e','#b8281e','#6a3a2a'],fol:[.85,1,.95,0],desc:'Deep green all summer, then a rich crimson.'},
+ {id:'rowan',name:'Rowan',rarity:'Common',price:26,shape:'round',trunk:'#6a5a4a',col:['#9ac05a','#5a8a3a','#e05a1e','#7a3a2a'],fol:[.8,1,.9,0],desc:'A small tree hung with orange berries in autumn.'},
+ {id:'linden',name:'Linden',rarity:'Common',price:28,shape:'round',trunk:'#5a4a3a',col:['#a8c86a','#5a8a3a','#d2b84a','#7a6a3a'],fol:[.85,1,.85,0],desc:'Heart-shaped leaves and honey-scented summer flowers.'},
+ {id:'pear',name:'Pear Tree',rarity:'Common',price:32,shape:'round',trunk:'#4a3a2e',col:['#f6f4ec','#4a7a34','#b8462a','#6a3a2a'],fol:[.95,1,.9,0],desc:'Snow-white spring blossom and glossy leaves.'},
+ {id:'poplar',name:'Lombardy Poplar',rarity:'Uncommon',price:40,shape:'column',trunk:'#7a7060',col:['#a8c85a','#5f8a3a','#e0c43a','#8a7a4a'],fol:[.85,1,.9,0],desc:'A tall green exclamation mark on the skyline.'},
+ {id:'cypress',name:'Italian Cypress',rarity:'Uncommon',price:55,shape:'column',trunk:'#5a4a3a',col:['#3a5a32','#2f522e','#34542f','#4a6448'],fol:[1,1,1,1],desc:'Dark, slender and evergreen; pure Tuscany.'},
+ {id:'spruce',name:'Blue Spruce',rarity:'Uncommon',price:60,shape:'cone',trunk:'#4a3a2e',col:['#6f9aa0','#5f8c94','#628c90','#8aa8b0'],fol:[1,1,1,1],desc:'Silvery blue needles that glow against the snow.'},
+ {id:'redbud',name:'Eastern Redbud',rarity:'Uncommon',price:65,shape:'round',trunk:'#4a3632',col:['#c8508a','#5a8a3a','#d0b03a','#6a4a3a'],fol:[1,1,.85,0],desc:'Bare branches burst into magenta before the leaves.'},
+ {id:'dogwood',name:'Flowering Dogwood',rarity:'Uncommon',price:75,shape:'umbrella',trunk:'#5a4636',col:['#f4f0e4','#4f7a34','#b8302a','#6a3a2a'],fol:[.95,1,.95,0],desc:'Layered branches of white spring bracts.'},
+ {id:'magnolia',name:'Saucer Magnolia',rarity:'Uncommon',price:90,shape:'round',wide:true,trunk:'#6a6058',col:['#f2d2dc','#3f6a34','#8a7a3a','#6a5a4a'],fol:[1,1,.8,0],desc:'Great goblet flowers of pink and ivory.'},
+ {id:'beech',name:'Copper Beech',rarity:'Rare',price:130,shape:'round',wide:true,trunk:'#8a8a84',col:['#9a5a5a','#5c2a36','#a0502a','#7a4a34'],fol:[.85,1,.95,0],desc:'Leaves the color of polished copper and wine.'},
+ {id:'tulip',name:'Tulip Tree',rarity:'Rare',price:150,shape:'ginkgo',trunk:'#6a5a48',col:['#9ac85a','#5a8a3a','#f0c83a','#8a7a3a'],fol:[.85,1,1,0],desc:'Tall and straight, with tulip-shaped flowers.'},
+ {id:'palm',name:'Coconut Palm',rarity:'Rare',price:170,shape:'palm',trunk:'#8a7a5a',col:['#6a9a3a','#5a8a34','#6a8a3a','#6a8a4a'],fol:[1,1,1,1],desc:'Arching fronds on a curving trunk; sold in summer only.'},
+ {id:'monkey',name:'Monkey Puzzle',rarity:'Rare',price:190,shape:'whorl',trunk:'#6a5a4a',col:['#3f6234','#355a30','#3a5a32','#4a6446'],fol:[1,1,1,1],desc:'Spiky, prehistoric and slightly ridiculous.'},
+ {id:'silkfloss',name:'Silk Floss Tree',rarity:'Exotic',price:280,shape:'round',wide:true,trunk:'#6a8a5a',col:['#5f8a3c','#4f7d34','#e87aa8','#7a6a4a'],fol:[.9,1,1,0],desc:'A green, spiny trunk that flowers bright pink in autumn.'},
+ {id:'eucalyptus',name:'Rainbow Eucalyptus',rarity:'Exotic',price:320,shape:'narrow',trunk:'#9a7a6a',col:['#7aa07a','#6a9472','#7a9a74','#7a9a80'],fol:[1,1,1,1],desc:'Bark that peels into streaks of green, orange and violet.'},
+ {id:'wisteria',name:'Wisteria Tree',rarity:'Exotic',price:340,shape:'willow',trunk:'#5a4a3e',col:['#a07ad8','#5f8a3c','#b8a03a','#7a6a4a'],fol:[1,.95,.8,0],desc:'Cascades of lilac flowers trailing like a curtain.'},
+ {id:'bristlecone',name:'Bristlecone Pine',rarity:'Legendary',price:520,shape:'umbrella',trunk:'#b0a088',col:['#3f5a3a','#36522f','#3a5434','#4a5a46'],fol:[1,1,1,1],desc:'Among the oldest living things on Earth; gnarled and patient.'},
  {id:'sequoia',name:'Giant Sequoia',rarity:'Legendary',price:600,shape:'tallcone',trunk:'#8a4a32',col:['#3e6638','#345c32','#3b5c34','#5f7a62'],fol:[1,1,1,1],desc:'The largest tree on Earth; it towers over everything.'}
 ];
 const SP={}; SPECIES.forEach(s=>SP[s.id]=s);
 /* seasonal nursery stock: 0 spring, 1 summer, 2 autumn, 3 winter */
 const AVAIL={oak:[0,2,3],birch:[0,2],maple:[1,2],apple:[0,3],pine:[2,3],willow:[0,1],paperbark:[0,3],cherry:[0],ginkgo:[2],trumpet:[1],
-  jmaple:[2,3],poinciana:[1],jacaranda:[0,1],dragon:[1,3],baobab:[1,2],sequoia:[3]};
+  jmaple:[2,3],poinciana:[1],jacaranda:[0,1],dragon:[1,3],baobab:[1,2],sequoia:[3],
+  redoak:[0,2],linden:[0,1],pear:[0,3],rowan:[2,3],poplar:[0,2],cypress:[1,3],spruce:[2,3],dogwood:[0,2],redbud:[0,1],magnolia:[0],
+  beech:[1,2],tulip:[1,2],monkey:[3,0],palm:[1],eucalyptus:[1,3],silkfloss:[2],wisteria:[0],bristlecone:[3]};
+SPECIES.sort((a,b)=>a.price-b.price);
 SPECIES.forEach(s=>s.seasons=AVAIL[s.id]||[0,1,2,3]);
 function curSeason(){return Math.floor(state.season/SEASON_LEN)%4;}
 function nextAvail(sp,si){for(let k=1;k<4;k++){if(sp.seasons.includes((si+k)%4))return (si+k)%4;}return si;}
 
 /* ---------- state ---------- */
 let state=fresh();
-function fresh(){return {money:START_MONEY,trees:[],play:0,season:SEASON_LEN*0.5,visitorsTotal:0,earned:0,cats:0,nextCat:CAT_EVERY,started:false};}
+function fresh(){return {money:START_MONEY,trees:[],play:0,season:SEASON_LEN*0.5,visitorsTotal:0,earned:0,cats:0,nextCat:CAT_EVERY,started:false,decor:[],savedAt:0};}
 function load(){
   try{const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false; const s=JSON.parse(raw);
     if(!s||typeof s.money!=='number') return false; state=Object.assign(fresh(),s); return true;}catch(e){return false;}
 }
 function save(){
-  try{state.trees=trees.map(t=>({s:t.sp.id,x:+t.x.toFixed(2),z:+t.z.toFixed(2),g:+t.g.toFixed(4),seed:t.seed}));
+  try{state.decor=decors.map(d=>({d:d.d.id,x:+d.x.toFixed(2),z:+d.z.toFixed(2),r:+d.r.toFixed(3)})); state.savedAt=Date.now();
+    state.trees=trees.map(t=>({s:t.sp.id,x:+t.x.toFixed(2),z:+t.z.toFixed(2),g:+t.g.toFixed(4),seed:t.seed}));
     localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){}
 }
 
@@ -453,6 +477,17 @@ function makeTree(sp,seed,mats){
       for(let i=0;i<7;i++){const yaw=i/7*Math.PI*2+R()*0.4;const e=branch(V(0,4.05,0),yaw,0.9+R()*0.3,1.2+R()*0.4,0.22);
         const e2=branch(e,yaw+0.4,0.5,0.6,0.1);blob(e2,0.55+R()*0.15,0.6);}
       blob(V(0,4.9,0),0.8,0.6);break;}
+    case 'column':{trunk(5.2,0.1,0.2);for(let i=0;i<9;i++){const a=R()*6.28,r=0.12+R()*0.18;blob(V(Math.cos(a)*r,1.3+i*0.62,Math.sin(a)*r),0.62-Math.abs(i-3.5)*0.05,1.5);}
+      blob(V(0,7.0,0),0.35,1.6);break;}
+    case 'whorl':{trunk(5.8,0.14,0.3);for(let l=0;l<4;l++){const y=2.4+l*0.9,len=1.7-l*0.3;for(let i=0;i<5;i++){const yaw=i/5*Math.PI*2+l*0.6;
+        const e=branch(V(0,y,0),yaw,1.35,len,0.07);blob(e,0.36,0.7);blob(V(e.x*0.55,e.y-0.05,e.z*0.55),0.3,0.7);}}
+      blob(V(0,6.1,0),0.85,0.75);break;}
+    case 'palm':{const curve=new THREE.CatmullRomCurve3([V(0,0,0),V(0.25,2,0),V(0.8,4,0),V(1.4,5.6,0)]);
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(curve,16,0.19,7,false),T));const top=V(1.4,5.6,0);
+      for(let i=0;i<9;i++){const yaw=i/9*Math.PI*2+R()*0.3;const m=new THREE.Mesh(BLOBS[i%6],F);m.rotation.order='YXZ';m.rotation.set(0.35+R()*0.25,yaw,0);
+        m.scale.set(0.32,0.06,1.5);m.position.set(top.x+Math.sin(yaw)*1.2,top.y-0.4,top.z+Math.cos(yaw)*1.2);m.userData.base=m.scale.clone();m.userData.plain=true;g.add(m);fol.push(m);}
+      const nut=mat('#5a4228');for(let i=0;i<3;i++){const c=new THREE.Mesh(new THREE.SphereGeometry(0.16,7,5),nut);c.position.set(top.x+Math.cos(i*2.1)*0.22,top.y-0.3,top.z+Math.sin(i*2.1)*0.22);g.add(c);}
+      break;}
     case 'dragon':{trunk(2.2,0.24,0.32);for(let i=0;i<7;i++){const e=branch(V(0,2.0,0),i/7*Math.PI*2+R()*0.3,0.45+R()*0.12,1.5,0.12);
       branch(e,i/7*Math.PI*2+0.5,0.5,0.5,0.06);}
       const crown=new THREE.Mesh(new THREE.SphereGeometry(2.5,16,8,0,Math.PI*2,0,Math.PI/2),F);crown.scale.set(1,0.42,1);crown.position.y=3.3;crown.userData.base=crown.scale.clone();g.add(crown);fol.push(crown);break;}
@@ -609,54 +644,126 @@ function updateCamera(dt){
   camera.lookAt(camTarget);
 }
 
+/* ---------- decorations ---------- */
+const DECOR=[
+ {id:'flowers',name:'Flower Bed',price:10,rad:1.1,w:0.3,desc:'A ring of blooms that changes with the seasons.'},
+ {id:'bench',name:'Garden Bench',price:15,rad:1.0,w:0.25,desc:'A place for visitors to rest and admire the view.'},
+ {id:'lamp',name:'Lamp Post',price:20,rad:0.5,w:0.2,desc:'Wrought iron with a warm amber glow.'},
+ {id:'birdbath',name:'Bird Bath',price:25,rad:0.6,w:0.3,desc:'A stone basin for passing sparrows.'},
+ {id:'picnic',name:'Picnic Table',price:30,rad:1.4,w:0.35,desc:'Room for a family lunch under the trees.'},
+ {id:'minipond',name:'Tiny Pond',price:45,rad:2.0,w:0.6,desc:'A little pool ringed with stones and reeds.'},
+ {id:'bridge',name:'Little Bridge',price:60,rad:2.3,w:0.7,desc:'An arched footbridge over a trickling stream.'},
+ {id:'gazebo',name:'Gazebo',price:250,rad:2.7,w:1.6,desc:'An open pavilion with a painted roof.'}
+];
+const DC={}; DECOR.forEach(d=>{d.kind='decor';d.seasons=[0,1,2,3];DC[d.id]=d;});
+const DM={wood:mat('#6a4a30'),dark:mat('#4a3424'),stone:mat('#a59c8c'),iron:mat('#2e2e33'),soil:mat('#5a4030'),reed:mat('#5a7a3a'),roof:mat('#8a3a2e'),
+  glow:new THREE.MeshBasicMaterial({color:'#ffe2a0'}),flower:mat('#e86a8a')};
+const FLOWER_C=toCols(['#e86a8a','#e8c03a','#d0702a','#8a7a6a']);
+const V3=(x,y,z)=>new THREE.Vector3(x,y,z);
+const decors=[]; const decorRoot=new THREE.Group(); scene.add(decorRoot);
+function makeDecor(id){
+  const g=new THREE.Group();
+  const box=(w,h,d,m,x,y,z)=>{const o=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),m);o.position.set(x,y,z);g.add(o);return o;};
+  const cyl=(rt,rb,h,m,x,y,z,seg)=>{const o=new THREE.Mesh(new THREE.CylinderGeometry(rt,rb,h,seg||10),m);o.position.set(x,y,z);g.add(o);return o;};
+  switch(id){
+    case 'flowers':{cyl(1,1.05,0.18,DM.soil,0,0.09,0,16);
+      for(let i=0;i<18;i++){const a=i/18*Math.PI*2,r=0.35+(i%3)*0.22;const b=new THREE.Mesh(BLOBS[i%6],i%3===1?DM.reed:DM.flower);
+        b.scale.setScalar(i%3===1?0.2:0.16);b.position.set(Math.cos(a)*r,0.3,Math.sin(a)*r);g.add(b);}break;}
+    case 'bench':{box(1.8,0.1,0.55,DM.wood,0,0.5,0);box(1.8,0.45,0.08,DM.wood,0,0.82,-0.26);
+      [-0.75,0.75].forEach(x=>box(0.08,0.5,0.5,DM.iron,x,0.25,0));break;}
+    case 'lamp':{cyl(0.06,0.09,3,DM.iron,0,1.5,0,8);cyl(0.22,0.3,0.15,DM.iron,0,0.07,0,8);box(0.32,0.4,0.32,DM.glow,0,3.15,0);
+      const cap=new THREE.Mesh(new THREE.ConeGeometry(0.3,0.3,4),DM.iron);cap.position.y=3.5;cap.rotation.y=Math.PI/4;g.add(cap);break;}
+    case 'birdbath':{cyl(0.16,0.28,0.9,DM.stone,0,0.45,0,10);cyl(0.55,0.25,0.2,DM.stone,0,0.98,0,14);
+      const w=new THREE.Mesh(new THREE.CircleGeometry(0.47,14),W.waterMat);w.rotation.x=-Math.PI/2;w.position.y=1.085;g.add(w);break;}
+    case 'picnic':{box(1.9,0.08,0.85,DM.wood,0,0.78,0);[-0.7,0.7].forEach(z=>box(1.9,0.07,0.3,DM.wood,0,0.46,z));
+      [-0.75,0.75].forEach(x=>{box(0.08,0.06,1.75,DM.dark,x,0.42,0);
+        const a=box(0.07,0.85,0.07,DM.dark,x,0.4,0.2);a.rotation.x=0.45;const b=box(0.07,0.85,0.07,DM.dark,x,0.4,-0.2);b.rotation.x=-0.45;});break;}
+    case 'minipond':{const w=new THREE.Mesh(new THREE.CircleGeometry(1.5,24),W.waterMat);w.rotation.x=-Math.PI/2;w.position.y=0.04;g.add(w);
+      for(let i=0;i<16;i++){const a=i/16*Math.PI*2;const r=new THREE.Mesh(BLOBS[i%6],DM.stone);const sc=0.22+0.12*hash3(i,2,3);r.scale.set(sc,sc*0.6,sc);r.position.set(Math.cos(a)*1.6,0.08,Math.sin(a)*1.6);g.add(r);}
+      for(let i=0;i<7;i++){const a=2.2+i*0.18;const c=new THREE.Mesh(new THREE.ConeGeometry(0.04,0.9+0.3*hash3(i,1,1),4),DM.reed);c.position.set(Math.cos(a)*1.4,0.45,Math.sin(a)*1.4);g.add(c);}
+      const pad=new THREE.Mesh(new THREE.CircleGeometry(0.22,10),DM.reed);pad.rotation.x=-Math.PI/2;pad.position.set(0.4,0.05,0.3);g.add(pad);break;}
+    case 'bridge':{const w=new THREE.Mesh(new THREE.PlaneGeometry(5,1.5),W.waterMat);w.rotation.x=-Math.PI/2;w.position.y=0.035;g.add(w);
+      for(let i=0;i<8;i++){const r=new THREE.Mesh(BLOBS[i%6],DM.stone);r.scale.set(0.3,0.15,0.25);r.position.set((i-3.5)*0.62,0.06,(i%2?0.8:-0.8));g.add(r);}
+      const L=1.9,n=9;for(let i=0;i<n;i++){const z=-L+i*(2*L/(n-1));const y=0.2+0.55*Math.cos(z/L*Math.PI/2);const dy=-0.55*Math.sin(z/L*Math.PI/2)*(Math.PI/2/L);
+        const pl=box(1.1,0.08,0.44,DM.wood,0,y,z);pl.rotation.x=-Math.atan(dy);}
+      [-0.55,0.55].forEach(x=>{const pts=[];for(let i=0;i<=12;i++){const z=-L+i*(2*L/12);pts.push(V3(x,0.75+0.55*Math.cos(z/L*Math.PI/2),z));}
+        g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),20,0.04,5,false),DM.dark));
+        [-L,0,L].forEach(z=>{const y=0.2+0.55*Math.cos(z/L*Math.PI/2);box(0.08,0.6,0.08,DM.dark,x,y+0.3,z);});});break;}
+    case 'gazebo':{cyl(2.4,2.5,0.3,DM.stone,0,0.15,0,8);for(let i=0;i<8;i++){const a=i/8*Math.PI*2+Math.PI/8;cyl(0.08,0.1,2.4,DM.wood,Math.cos(a)*2.1,1.5,Math.sin(a)*2.1,6);}
+      const roof=new THREE.Mesh(new THREE.ConeGeometry(2.9,1.6,8),DM.roof);roof.position.y=3.5;roof.rotation.y=Math.PI/8;g.add(roof);
+      cyl(2.5,2.5,0.18,DM.wood,0,2.72,0,8);const f=new THREE.Mesh(new THREE.SphereGeometry(0.15,8,6),DM.iron);f.position.y=4.35;g.add(f);
+      [1.4,-1.4].forEach(z=>box(1.4,0.08,0.4,DM.wood,0,0.62,z));break;}
+  }
+  shadowAll(g); return g;
+}
+function addDecor(id,x,z,r){const d=DC[id];if(!d)return null;const g=makeDecor(id);g.position.set(x,0,z);g.rotation.y=r||0;
+  const o={d,group:g,x,z,r:r||0};g.userData.decor=o;decorRoot.add(g);decors.push(o);return o;}
+
 /* ---------- planting ---------- */
-let stage=STAGES[0], picked=null, ghostPos=null;
+let stage=STAGES[0], picked=null, ghostPos=null, pickRot=0, shopTab='trees';
 const ghost=new THREE.Group();
 const ghostRingMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.85,depthWrite:false});
 const ghostRing=new THREE.Mesh(new THREE.RingGeometry(0.9,1.2,32),ghostRingMat); ghostRing.rotation.x=-Math.PI/2; ghostRing.position.y=0.06; ghost.add(ghostRing);
 const ghostCone=new THREE.Mesh(new THREE.ConeGeometry(0.7,2.2,8),new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.35,depthWrite:false})); ghostCone.position.y=1.3; ghost.add(ghostCone);
+let ghostDecor=null; const ghostDecorMat=new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.4,depthWrite:false});
 ghost.visible=false; scene.add(ghost);
 const ray=new THREE.Raycaster(), groundPlane=new THREE.Plane(new THREE.Vector3(0,1,0),0);
 function priceOf(sp,st){return Math.round(sp.price*st.mult);}
-function placeError(x,z){
-  const r=Math.hypot(x,z);
-  if(r>GARDEN_R) return 'That spot is outside the hedge.';
-  if(r<5) return 'Leave the fountain plaza clear.';
-  if(Math.abs(x)<2.3&&z>0) return 'Keep the path clear for visitors.';
-  if(Math.hypot(x-POND.x,z-POND.z)<POND_R+1.2) return 'Trees can’t grow in the pond.';
-  for(const t of trees){ if(Math.hypot(t.x-x,t.z-z)<2.2) return 'Too close to another tree.'; }
+const isDecor=p=>!!p&&p.kind==='decor';
+function pickPrice(p){return isDecor(p)?p.price:priceOf(p,stage);}
+function pickRad(p){return isDecor(p)?p.rad:1.1;}
+function placeError(x,z,rad){
+  rad=rad||1.1; const r=Math.hypot(x,z);
+  if(r>GARDEN_R+1.1-rad) return 'That spot is outside the hedge.';
+  if(r<3.9+rad) return 'Leave the fountain plaza clear.';
+  if(Math.abs(x)<1.2+rad&&z>-rad) return 'Keep the path clear for visitors.';
+  if(Math.hypot(x-POND.x,z-POND.z)<POND_R+0.1+rad) return 'That’s in the pond.';
+  for(const t of trees){ if(Math.hypot(t.x-x,t.z-z)<1.1+rad) return 'Too close to a tree.'; }
+  for(const d of decors){ if(Math.hypot(d.x-x,d.z-z)<d.d.rad+rad) return `Too close to the ${d.d.name.toLowerCase()}.`; }
   return null;
 }
 function onTap(cx,cy){
   const ndc=new THREE.Vector2(cx/innerWidth*2-1,-(cy/innerHeight)*2+1); ray.setFromCamera(ndc,camera);
   if(picked){
     const hit=new THREE.Vector3(); if(!ray.ray.intersectPlane(groundPlane,hit)) return;
-    const err=placeError(hit.x,hit.z); if(err){toast(err); return;}
+    const err=placeError(hit.x,hit.z,pickRad(picked)); if(err){toast(err); return;}
     ghostPos=hit; ghost.position.copy(hit); ghost.visible=true; updateBanner(); return;
   }
   if(cat){const h=ray.intersectObject(cat.c.g,true); if(h.length){toast(`The gray cat ignores you completely. Sighting number ${state.cats}.`);return;}}
-  const hits=ray.intersectObject(treeRoot,true);
-  if(hits.length){let o=hits[0].object;while(o&&!o.userData.tree)o=o.parent;if(o){const t=o.userData.tree;
-    toast(`${t.sp.name}: ${Math.round(t.g*100)}% grown. ${t.sp.rarity}.`);}}
+  const hits=ray.intersectObjects([treeRoot,decorRoot],true);
+  if(hits.length){let o=hits[0].object;while(o&&!o.userData.tree&&!o.userData.decor)o=o.parent;
+    if(o&&o.userData.tree){const t=o.userData.tree;toast(`${t.sp.name}: ${Math.round(t.g*100)}% grown. ${t.sp.rarity}.`);}
+    else if(o&&o.userData.decor){toast(`${o.userData.decor.d.name}. Visitors love it.`);}}
 }
-function pick(sp){if(!sp.seasons.includes(curSeason()))return; picked=sp; ghostPos=null; ghost.visible=false; closeShop(); updateBanner();}
+function setGhost(){
+  if(ghostDecor){ghost.remove(ghostDecor);ghostDecor=null;}
+  ghostCone.visible=!isDecor(picked);
+  if(isDecor(picked)){ghostDecor=makeDecor(picked.id);ghostDecor.traverse(m=>{if(m.isMesh){m.material=ghostDecorMat;m.castShadow=false;m.receiveShadow=false;}});ghost.add(ghostDecor);}
+}
+function pick(p){if(!p.seasons.includes(curSeason()))return; picked=p; ghostPos=null; pickRot=0; setGhost(); ghost.visible=false; closeShop(); updateBanner();}
 function updateBanner(){
-  const b=$('#banner'),txt=$('#bannerTxt'),pb=$('#plantBtn');
+  const b=$('#banner'),txt=$('#bannerTxt'),pb=$('#plantBtn'),rb=$('#rotBtn');
   if(!picked){b.style.display='none';ghost.visible=false;return;}
-  b.style.display='flex'; const price=priceOf(picked,stage); const ok=state.money>=price;
-  if(!ghostPos){txt.textContent=`Tap the ground to place a ${stage.name.toLowerCase()} ${picked.name} ($${price}).`;pb.style.display='none';}
-  else{txt.textContent=ok?`Plant the ${picked.name} here for $${price}?`:`You need $${price-state.money} more for this ${picked.name}.`;
-    pb.style.display=''; pb.disabled=!ok; pb.textContent=`Plant for $${price}`;}
+  b.style.display='flex'; const price=pickPrice(picked), ok=state.money>=price, dec=isDecor(picked);
+  const label=dec?picked.name.toLowerCase():`${stage.name.toLowerCase()} ${picked.name}`;
+  rb.style.display=dec&&ghostPos?'':'none';
+  if(!ghostPos){txt.textContent=`Tap the ground to place a ${label} ($${price}).`;pb.style.display='none';}
+  else{txt.textContent=ok?`${dec?'Place':'Plant'} the ${dec?label:picked.name} here for $${price}?`:`You need $${price-Math.floor(state.money)} more for this ${dec?label:picked.name}.`;
+    pb.style.display=''; pb.disabled=!ok; pb.textContent=`${dec?'Place':'Plant'} for $${price}`;}
   ghostRingMat.color.set(ok?0xffffff:0xd06040);
-  ghost.scale.setScalar(growthScale(stage.g)*1.4);
+  if(dec){ghost.scale.setScalar(1);ghostRing.scale.setScalar(picked.rad/1.05);ghost.rotation.y=pickRot;}
+  else{ghostRing.scale.setScalar(1);ghost.rotation.y=0;ghost.scale.setScalar(growthScale(stage.g)*1.4);}
 }
 $('#plantBtn').onclick=()=>{
-  if(!picked||!ghostPos) return; const price=priceOf(picked,stage);
+  if(!picked||!ghostPos) return; const price=pickPrice(picked);
   if(state.money<price){toast('Not enough money yet; visitors will bring more.');return;}
-  const err=placeError(ghostPos.x,ghostPos.z); if(err){toast(err);return;}
-  state.money-=price; addTree(picked.id,ghostPos.x,ghostPos.z,stage.g);
-  toast(`Planted a ${picked.name}.`); ghostPos=null; ghost.visible=false; updateBanner(); save(); refreshHud(true);
+  const err=placeError(ghostPos.x,ghostPos.z,pickRad(picked)); if(err){toast(err);return;}
+  state.money-=price;
+  if(isDecor(picked)){addDecor(picked.id,ghostPos.x,ghostPos.z,pickRot);toast(`Placed a ${picked.name.toLowerCase()}.`);}
+  else{addTree(picked.id,ghostPos.x,ghostPos.z,stage.g);toast(`Planted a ${picked.name}.`);}
+  ghostPos=null; ghost.visible=false; updateBanner(); save(); refreshHud(true);
 };
+$('#rotBtn').onclick=()=>{pickRot+=Math.PI/4;updateBanner();};
 $('#doneBtn').onclick=()=>{picked=null;ghostPos=null;updateBanner();};
 
 /* ---------- shop ---------- */
@@ -671,7 +778,7 @@ const ICON={
  dragon:'<path d="M4 16 Q22 4 40 16 Z"/><path d="M21 40 V20 M22 26 L12 16 M22 26 L32 16" stroke-width="2.6" fill="none"/>'
 };
 /* ---------- nursery thumbnails: detailed, rotating 3D trees ---------- */
-const SHOWCASE={cherry:0,jacaranda:0,maple:2,ginkgo:2,jmaple:2,apple:0,paperbark:0,trumpet:0};
+const SHOWCASE={cherry:0,jacaranda:0,maple:2,ginkgo:2,jmaple:2,apple:0,paperbark:0,trumpet:0,pear:0,rowan:2,dogwood:0,redbud:0,magnolia:0,tulip:2,silkfloss:2,wisteria:0,redoak:2};
 function canvasTex(size,draw){const c=document.createElement('canvas');c.width=c.height=size;draw(c.getContext('2d'),size);const t=new THREE.CanvasTexture(c);t.wrapS=t.wrapT=THREE.RepeatWrapping;return t;}
 const barkTex=canvasTex(128,(g,s)=>{g.fillStyle='#8c8c8c';g.fillRect(0,0,s,s);
   for(let i=0;i<260;i++){const x=Math.random()*s,y=Math.random()*s,w=1+Math.random()*3,h=12+Math.random()*44,v=70+Math.random()*130|0;
@@ -683,6 +790,8 @@ const birchTex=canvasTex(128,(g,s)=>{g.fillStyle='#f4f2ec';g.fillRect(0,0,s,s);
 const paperTex=canvasTex(128,(g,s)=>{g.fillStyle='#8a3a26';g.fillRect(0,0,s,s);
   for(let y=0;y<s;y+=4+Math.random()*6){g.fillStyle=Math.random()<0.5?'#c06a40':'#a04a2e';g.fillRect(0,y,s,2+Math.random()*3);}
   for(let i=0;i<60;i++){const x=Math.random()*s,y=Math.random()*s;g.fillStyle='rgba(50,20,12,.7)';g.fillRect(x,y,8+Math.random()*16,1.5);}});
+const rainbowTex=canvasTex(128,(g,s)=>{const cs=['#6a9a5a','#d0803a','#8a5aa0','#c0a040','#4a7a8a','#b04a3a'];g.fillStyle='#8a9a6a';g.fillRect(0,0,s,s);
+  for(let i=0;i<90;i++){g.fillStyle=cs[i%cs.length];const x=Math.random()*s,w=3+Math.random()*10,y=Math.random()*s,h=20+Math.random()*60;g.fillRect(x,y,w,h);g.fillRect(x,y-s,w,h);}});
 const leafTex=canvasTex(256,(g,s)=>{g.fillStyle='#a8a8a8';g.fillRect(0,0,s,s);
   for(let i=0;i<1400;i++){const x=Math.random()*s,y=Math.random()*s,v=110+Math.random()*145|0;
     g.fillStyle=`rgb(${v},${v},${v})`;g.save();g.translate(x,y);g.rotate(Math.random()*6.28);g.beginPath();g.ellipse(0,0,4+Math.random()*3,1.6+Math.random(),0,0,6.28);g.fill();g.restore();}});
@@ -711,14 +820,14 @@ function thumbModel(sp){
   const base=new THREE.Color(sp.col[si]);
   const side=sp.shape==='dragon'?THREE.DoubleSide:THREE.FrontSide;
   const leaf=c=>new THREE.MeshPhongMaterial({color:c,map:leafTex,shininess:10,specular:0x181818,side});
-  const birch=sp.id==='birch', paper=sp.id==='paperbark';
-  const mats={T:new THREE.MeshPhongMaterial({color:(birch||paper)?'#ffffff':new THREE.Color(sp.trunk).lerp(new THREE.Color('#ffffff'),0.35),map:birch?birchTex:(paper?paperTex:barkTex),shininess:paper?40:3,specular:paper?0x553322:0x111111}),
+  const special={birch:birchTex,paperbark:paperTex,eucalyptus:rainbowTex}[sp.id], paper=sp.id==='paperbark'||sp.id==='eucalyptus';
+  const mats={T:new THREE.MeshPhongMaterial({color:special?'#ffffff':new THREE.Color(sp.trunk).lerp(new THREE.Color('#ffffff'),0.35),map:special||barkTex,shininess:paper?40:3,specular:paper?0x553322:0x111111}),
     F:leaf(base),light:leaf(base.clone().lerp(new THREE.Color('#fff4c0'),0.22)),dark:leaf(base.clone().multiplyScalar(0.62))};
   const {group,fol}=makeTree(sp,4242+sp.price,mats);
   const up=new THREE.Vector3();
   fol.forEach(m=>{
     const type=m.geometry.type;
-    if(m.userData.sway!==undefined){m.material=R()<0.5?mats.F:mats.light;return;}
+    if(m.userData.sway!==undefined||m.userData.plain){m.material=R()<0.5?mats.F:mats.light;return;}
     if(type==='IcosahedronGeometry'){
       m.rotation.set(0,R()*6.28,0); m.material=mats.dark;
       for(let i=0;i<12;i++){up.set(R()*2-1,R()*1.6-0.5,R()*2-1).normalize();
@@ -743,6 +852,11 @@ function thumbModel(sp){
   group.userData.fit={cy:h*0.5,dist:(Math.max(h,w)*0.62)/Math.tan(15*Math.PI/180)};
   thumbModels[sp.id]=group; return group;
 }
+const decorThumbs={};
+function decorThumb(id){if(decorThumbs[id])return decorThumbs[id];const g=makeDecor(id);
+  const box=new THREE.Box3().setFromObject(g),size=box.getSize(new THREE.Vector3());const k=3.4/Math.max(size.y,Math.max(size.x,size.z));
+  g.scale.setScalar(k);g.position.y=-box.min.y*k;const h=size.y*k,w=Math.max(size.x,size.z)*k;
+  g.userData.fit={cy:h*0.5,dist:(Math.max(h,w)*0.66)/Math.tan(15*Math.PI/180),el:0.45};decorThumbs[id]=g;return g;}
 let thumbClock=0;
 function renderThumbs(dt,t){
   if(!$('#shop').classList.contains('open')) return;
@@ -751,14 +865,18 @@ function renderThumbs(dt,t){
   const lr=$('#list').getBoundingClientRect();
   document.querySelectorAll('#list canvas.thumb').forEach((cv,i)=>{
     const b=cv.getBoundingClientRect(); if(b.bottom<lr.top||b.top>lr.bottom) return;
-    const m=thumbModel(SP[cv.dataset.id]); if(TR.cur!==m){if(TR.cur)TR.scene.remove(TR.cur);TR.scene.add(m);TR.cur=m;}
+    const m=cv.dataset.kind==='decor'?decorThumb(cv.dataset.id):thumbModel(SP[cv.dataset.id]); if(TR.cur!==m){if(TR.cur)TR.scene.remove(TR.cur);TR.scene.add(m);TR.cur=m;}
     const f=m.userData.fit; m.rotation.y=t*0.5+i*0.9;
-    TR.cam.position.set(0,f.cy+f.dist*0.2,f.dist); TR.cam.lookAt(0,f.cy*0.92,0);
+    TR.cam.position.set(0,f.cy+f.dist*(f.el||0.2),f.dist); TR.cam.lookAt(0,f.cy*0.92,0);
     TR.r.render(TR.scene,TR.cam);
     const g=cv.getContext('2d'); g.clearRect(0,0,cv.width,cv.height); g.drawImage(TR.r.domElement,0,0,cv.width,cv.height);
   });
 }
 function renderSeg(){
+  $('#tabs').innerHTML=[['trees','🌳 Trees'],['decor','🪑 Garden decor']].map(([id,l])=>`<button data-t="${id}" aria-pressed="${shopTab===id}">${l}</button>`).join('');
+  $('#tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{shopTab=b.dataset.t;renderSeg();renderList();$('#list').scrollTop=0;});
+  const tr=shopTab==='trees'; $('#seg').style.display=tr?'':'none';
+  $('#note').textContent=tr?'Stock changes with every season. Older trees cost more but draw visitors sooner; rare trees draw more of them.':'Decorations are always in stock and make the garden a little more appealing to visitors. Use Rotate to turn them before placing.';
   $('#seg').innerHTML=STAGES.map(s=>`<button data-s="${s.id}" aria-pressed="${s===stage}">${s.name}<small>${s.mult===1?'base price':'× '+s.mult}</small></button>`).join('');
   $('#seg').querySelectorAll('button').forEach(b=>b.onclick=()=>{stage=STAGES.find(s=>s.id===b.dataset.s);renderSeg();renderList();updateBanner();});
 }
@@ -771,12 +889,18 @@ function renderList(){
     return `<div class="tree-row${avail?'':' off'}"><canvas class="thumb" width="144" height="144" data-id="${sp.id}" aria-hidden="true"></canvas>
       <div><h3>${sp.name}<span class="rar" style="color:${RARITY[sp.rarity].c}">${sp.rarity}</span></h3><p>${sp.desc}</p></div>${btn}</div>`;};
   const inS=SPECIES.filter(s=>s.seasons.includes(si)), outS=SPECIES.filter(s=>!s.seasons.includes(si));
+  if(shopTab==='decor'){
+    $('#list').innerHTML=DECOR.map(d=>{const ok=state.money>=d.price;return `<div class="tree-row"><canvas class="thumb" width="144" height="144" data-kind="decor" data-id="${d.id}" aria-hidden="true"></canvas>
+      <div><h3>${d.name}</h3><p>${d.desc}</p></div><button class="btn buy ${ok?'':'cant'}" data-d="${d.id}"><span class="num">$${d.price}</span>${ok?'Choose':'Save up'}</button></div>`;}).join('');
+    $('#list').querySelectorAll('.buy[data-d]').forEach(b=>b.onclick=()=>pick(DC[b.dataset.d]));
+  } else {
   $('#list').innerHTML=`<div class="sec">${SEASON_ICON[si]} In stock this ${SEASONS[si].toLowerCase()}</div>`+inS.map(s=>row(s,true)).join('')
     +`<div class="sec">Out of season</div>`+outS.map(s=>row(s,false)).join('');
   $('#list').querySelectorAll('.buy[data-id]').forEach(b=>b.onclick=()=>pick(SP[b.dataset.id]));
+  }
   $('#wallet').textContent='$'+Math.floor(state.money).toLocaleString();
   const mins=Math.floor(state.play/60);
-  $('#stats').innerHTML=`<span>${trees.length} trees</span><span>${state.visitorsTotal} visitors</span><span>$${state.earned.toLocaleString()} in tickets</span><span>${mins} min played</span><button class="btn" id="reset">Start over</button>`;
+  $('#stats').innerHTML=`<span>${trees.length} trees</span><span>${decors.length} decorations</span><span>${state.visitorsTotal} visitors</span><span>$${state.earned.toLocaleString()} in tickets</span><span>${mins} min played</span><button class="btn" id="reset">Start over</button>`;
   let armed=false; const rb=$('#reset'); rb.onclick=()=>{ if(!armed){armed=true;rb.textContent='Tap again to erase';setTimeout(()=>{armed=false;if(rb.isConnected)rb.textContent='Start over';},3000);return;} resetGame(); };
 }
 function openShop(){renderSeg();renderList();$('#shop').classList.add('open');$('#shop').setAttribute('aria-hidden','false');}
@@ -784,6 +908,7 @@ function closeShop(){$('#shop').classList.remove('open');$('#shop').setAttribute
 $('#shopBtn').onclick=openShop; $('#closeShop').onclick=closeShop;
 function resetGame(){
   trees.slice().forEach(t=>treeRoot.remove(t.group)); trees.length=0;
+  decors.slice().forEach(d=>decorRoot.remove(d.group)); decors.length=0;
   people.forEach(v=>scene.remove(v.p.g)); people.length=0; if(cat){scene.remove(cat.c.g);cat=null;}
   state=fresh(); state.started=true; picked=null; updateBanner(); save(); closeShop(); refreshHud(true); toast('A fresh meadow and $100 to spend.');
 }
@@ -804,7 +929,7 @@ function floatText(txt,world){
 
 /* ---------- simulation ---------- */
 let visitorClock=0;
-function beauty(){let b=0;for(const t of trees)b+=RARITY[t.sp.rarity].w*(0.25+t.g);return b;}
+function beauty(){let b=0;for(const t of trees)b+=RARITY[t.sp.rarity].w*(0.25+t.g);for(const d of decors)b+=d.d.w;return b;}
 function applySeason(ph,t){
   lerpCol(PAL.sky,ph,scene.background); scene.fog.color.copy(scene.background);
   lerpCol(PAL.ground,ph,W.groundMat.color); lerpCol(PAL.path,ph,W.pathMat.color); lerpCol(PAL.hedge,ph,W.hedgeMat.color);
@@ -812,6 +937,7 @@ function applySeason(ph,t){
   lerpCol(PAL.sunC,ph,sun.color); sun.intensity=lerpNum(SUN_I,ph); lerpCol(PAL.hemiTop,ph,hemi.color);
   // sun arcs lower in winter
   const elev=lerpNum([0.95,1.15,0.8,0.55],ph); sun.position.set(Math.cos(0.6)*40,Math.sin(elev)*55,Math.sin(0.6)*40);
+  lerpCol(FLOWER_C,ph,DM.flower.color);
   SPECIES.forEach(sp=>{lerpCol(sp.colors,ph,sp.folMat.color);sp.folScale=lerpNum(sp.fol,ph);});
   lerpCol(PAL.part,ph,pMat.color); pMat.opacity=lerpNum(PART_O,ph); points.visible=pMat.opacity>0.03;
   pMat.size=lerpNum([0.26,0.2,0.34,0.22],ph);
@@ -850,7 +976,7 @@ function refreshHud(force){
   $('#seasonTxt').textContent=`${SEASON_ICON[si]} ${SEASONS[si]}, ${left} min left`;
   $('#seasonBar').style.width=(frac*100).toFixed(1)+'%';
   $('#hint').style.display=trees.length?'none':'block';
-  if($('#shop').classList.contains('open')){const sig=si+':'+SPECIES.map(s=>state.money>=priceOf(s,stage)?1:0).join('');if(sig!==lastAfford||force){lastAfford=sig;renderList();}}
+  if($('#shop').classList.contains('open')){const sig=shopTab+si+':'+SPECIES.map(s=>state.money>=priceOf(s,stage)?1:0).join('')+DECOR.map(d=>state.money>=d.price?1:0).join('');if(sig!==lastAfford||force){lastAfford=sig;renderList();}}
   if(picked) updateBanner();
 }
 
@@ -876,11 +1002,23 @@ function loop(now){
 }
 
 /* ---------- boot ---------- */
+const AWAY_RATE=0.1; // seasons move at a tenth of normal speed while you're away
+function driftSeasons(sec){if(!(sec>5))return 0;const adv=Math.min(sec*AWAY_RATE,SEASON_LEN*4);state.season=(state.season+adv)%(SEASON_LEN*4);return adv;}
 const had=load();
+const awayAdv=had&&state.savedAt?driftSeasons((Date.now()-state.savedAt)/1000):0;
 (state.trees||[]).forEach(t=>addTree(t.s,t.x,t.z,t.g,t.seed));
-if(had&&state.started){$('#intro').style.display='none';running=true;toast(`Welcome back. It’s ${SEASONS[Math.floor(state.season/SEASON_LEN)%4].toLowerCase()} in your arboretum.`);}
+(state.decor||[]).forEach(d=>addDecor(d.d,d.x,d.z,d.r));
+if(had&&state.started){$('#intro').style.display='none';running=true;
+  const extra=awayAdv>=60?` While you were away, the seasons drifted on by ${Math.round(awayAdv/60)} min.`:'';
+  toast(`Welcome back. It’s ${SEASONS[Math.floor(state.season/SEASON_LEN)%4].toLowerCase()} in your arboretum.${extra}`,null,6000);}
 $('#begin').onclick=()=>{$('#intro').style.display='none';state.started=true;running=true;save();};
-addEventListener('pagehide',save); document.addEventListener('visibilitychange',()=>{if(document.hidden)save();});
+let hiddenAt=0;
+addEventListener('pagehide',save);
+document.addEventListener('visibilitychange',()=>{
+  if(document.hidden){hiddenAt=Date.now();save();}
+  else if(hiddenAt){const adv=running?driftSeasons((Date.now()-hiddenAt)/1000):0;hiddenAt=0;last=performance.now();
+    if(adv>=60)toast(`While you were away, the seasons drifted on by ${Math.round(adv/60)} min.`,null,5000);}
+});
 refreshHud(true);
 requestAnimationFrame(loop);
 })();
