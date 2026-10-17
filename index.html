@@ -3,11 +3,40 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
-<title>The Painted Arboretum</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
+<meta name="theme-color" content="#cdb68a">
+<title>The Painted Arboretum — Psychard</title>
+<meta name="description" content="Plant a garden of painted trees, watch them grow through the seasons and sell tickets to the visitors who come to see them.">
+<link rel="canonical" href="https://www.psychard.com/arboretum/">
+<link rel="manifest" href="/arboretum/manifest.json">
+<link rel="icon" href="/icons/psychard.svg" type="image/svg+xml">
+<link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="/icons/arboretum.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Arboretum">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Psychard">
+<meta property="og:url" content="https://www.psychard.com/arboretum/">
+<meta property="og:title" content="The Painted Arboretum">
+<meta property="og:description" content="Plant a garden of painted trees and watch them grow through the seasons.">
+<meta property="og:image" content="https://www.psychard.com/icons/og-arboretum.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:type" content="image/jpeg">
+<meta property="og:image:alt" content="A painted garden of trees around a fountain, drawn as if in oils.">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://www.psychard.com/icons/og-arboretum.jpg">
 <style>
+/* Architects Daughter by Kimberly Geswein, SIL Open Font License 1.1.
+   Served from this repo rather than Google Fonts so the game keeps its
+   handwriting in an installed PWA, offline, and without a third-party hop. */
+@font-face{font-family:"Architects Daughter";font-style:normal;font-weight:400;font-display:swap;
+  src:url(vendor/architects-daughter-latin.woff2) format("woff2");
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:"Architects Daughter";font-style:normal;font-weight:400;font-display:swap;
+  src:url(vendor/architects-daughter-latin-ext.woff2) format("woff2");
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C4,U+2113,U+2C60-2C7F,U+A720-A7FF}
 :root{
   color-scheme:light;
   --bg:#cdb68a;
@@ -74,7 +103,9 @@ button:focus-visible{outline:2px dashed var(--accent);outline-offset:2px}
   align-self:flex-start;border:1px solid var(--line);display:none}
 
 /* banners */
-#banner,#visitBar{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 92px);z-index:6;
+/* --hud-h is measured in refreshHud; the HUD chips wrap on a narrow phone, so a
+   fixed offset here would put the banner on top of them. */
+#banner,#visitBar{position:fixed;left:12px;right:12px;top:calc(var(--hud-h,104px) + 6px);z-index:6;
   border-radius:6px;padding:10px 12px;display:none;gap:8px;align-items:center;flex-wrap:wrap;max-width:520px;margin:0 auto}
 #banner p{margin:0;flex:1 1 180px;font-size:15px;line-height:1.4}
 #visitTxt{flex:1 1 160px;font-size:15px}
@@ -93,7 +124,7 @@ button:focus-visible{outline:2px dashed var(--accent);outline-offset:2px}
 #zoom button{width:46px;height:46px;border-radius:50%;background:var(--chip);border:1px solid var(--line);box-shadow:var(--shadow);font-size:24px;line-height:1;color:var(--ink)}
 
 /* toasts, floaters and name tags */
-#toasts{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 150px);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:7;pointer-events:none;padding:0 14px}
+#toasts{position:fixed;left:0;right:0;top:calc(var(--hud-h,104px) + 58px);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:7;pointer-events:none;padding:0 14px}
 .toast{pointer-events:auto;border-radius:6px;padding:8px 14px;font-size:15px;max-width:420px;display:flex;gap:10px;align-items:center;animation:tin .35s ease-out}
 .toast.out{opacity:0;transform:translateY(-6px);transition:all .4s}
 @keyframes tin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
@@ -109,6 +140,10 @@ button:focus-visible{outline:2px dashed var(--accent);outline-offset:2px}
   transform:translateY(105%);transition:transform .32s ease;padding-bottom:env(safe-area-inset-bottom,0px);max-width:640px;margin:0 auto}
 .sheet::before{content:"";position:absolute;inset:7px 7px 0;border:1px solid var(--line);border-bottom:0;border-radius:3px 3px 0 0;pointer-events:none}
 .sheet.open{transform:none}
+/* The sheet is a column flexbox with a max-height, so by default every child
+   shrinks to fit and the tab and stage buttons collapse to a few pixels once
+   the list is long. Only the list is allowed to give ground; it scrolls. */
+.sheet>*{flex:none}
 .shop-head{display:flex;align-items:baseline;gap:10px;padding:16px 20px 2px}
 .shop-head h2{margin:0;font-size:26px;font-weight:400;flex:1;letter-spacing:.02em}
 .flourish{margin:0 20px 6px;text-align:center;color:var(--muted);font-size:13px;letter-spacing:.2em}
@@ -120,7 +155,7 @@ button:focus-visible{outline:2px dashed var(--accent);outline-offset:2px}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
 .seg button[aria-pressed="true"] small{color:inherit;opacity:.9}
 .stage-note{margin:4px 20px 8px;font-size:13px;color:var(--muted);line-height:1.45}
-#list,#plist{overflow-y:auto;padding:0 14px 10px;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+#list,#plist{flex:1 1 auto;min-height:0;overflow-y:auto;padding:0 14px 10px;-webkit-overflow-scrolling:touch;touch-action:pan-y}
 .tree-row{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px dashed var(--line)}
 .tree-row canvas{width:72px;height:72px;display:block;border-radius:50%;background:radial-gradient(circle,rgba(255,250,232,.55),transparent 70%)}
 .tree-row h3{margin:0;font-size:17px;font-weight:400;line-height:1.25}
@@ -146,6 +181,8 @@ button:focus-visible{outline:2px dashed var(--accent);outline-offset:2px}
 .card h1{margin:0 0 6px;font-size:30px;line-height:1.15;font-weight:400}
 .card p{margin:8px 0;font-size:15.5px;line-height:1.55}
 .card .btn.primary{width:100%;margin-top:10px;padding:10px;font-size:17px}
+.card .home{display:block;margin-top:12px;text-align:center;font-size:13px;color:var(--muted);text-decoration:none}
+.card .home:hover{text-decoration:underline}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -203,17 +240,35 @@ button:focus-visible{outline:2px dashed var(--accent);outline-offset:2px}
     <h1>The Painted Arboretum</h1>
     <p>You have $100 and an empty meadow. Buy trees and garden decorations from the shop, then tap the ground to place them. Each visitor buys a $25 ticket.</p>
     <p>Trees grow while you play, and the seasons turn slowly; each one lasts an hour. Keep an eye out for the gray cat, who wanders by every five minutes.</p>
-    <p>Friends playing at the same time can visit each other’s arboretums from the 🧑‍🌾 button.</p>
     <p>Use the joystick in the corner to circle the garden, or drag the scene. Pinch or use + and − to zoom.</p>
     <button class="btn primary" id="begin">Begin</button>
+    <a class="home" href="/">psychard.com</a>
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- three.js r128, MIT licensed. Vendored rather than loaded from a CDN. -->
+<script src="vendor/three.min.js"></script>
 <script>
 (function(){
 'use strict';
 const $=s=>document.querySelector(s);
+
+function webglOk(){
+  try{const c=document.createElement('canvas');
+    return !!(window.WebGLRenderingContext&&(c.getContext('webgl')||c.getContext('experimental-webgl')));}
+  catch(e){return false;}
+}
+if(!window.THREE||!webglOk()){
+  const card=$('#intro .card');
+  card.textContent='';
+  const h=document.createElement('h1'); h.textContent='The Painted Arboretum';
+  const p=document.createElement('p');
+  p.textContent='This garden is painted with WebGL, which this browser does not seem to have available. Another browser, or hardware acceleration switched back on in the settings, should bring it back.';
+  const a=document.createElement('a'); a.className='home'; a.href='/'; a.textContent='psychard.com';
+  card.append(h,p,a);
+  return;
+}
+
 const SAVE_KEY='painted-arboretum-v1';
 const SEASON_LEN=3600, CAT_EVERY=300, TICKET=25, START_MONEY=100;
 const SEASONS=['Spring','Summer','Autumn','Winter'];
@@ -765,7 +820,9 @@ let joyX=0, joyY=0;
 })();
 const ptrs=new Map(); let pinch0=0,rad0=0,downAt=null;
 canvas.addEventListener('pointerdown',e=>{
-  canvas.setPointerCapture(e.pointerId); ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
+  // capture is a nicety; if the browser refuses it the drag must still work
+  try{canvas.setPointerCapture(e.pointerId);}catch(err){}
+  ptrs.set(e.pointerId,{x:e.clientX,y:e.clientY});
   if(ptrs.size===1) downAt={x:e.clientX,y:e.clientY,t:performance.now(),moved:false};
   if(ptrs.size===2){const [a,b]=[...ptrs.values()];pinch0=Math.hypot(a.x-b.x,a.y-b.y);rad0=camR;if(downAt)downAt.moved=true;}
 });
@@ -781,6 +838,11 @@ const upPtr=e=>{
   if(ptrs.size===0&&downAt){if(!downAt.moved&&performance.now()-downAt.t<500) onTap(e.clientX,e.clientY); downAt=null;}
 };
 canvas.addEventListener('pointerup',upPtr); canvas.addEventListener('pointercancel',upPtr);
+// Also on the window: if a release ever misses the canvas -- a finger leaving by
+// the screen edge, or a browser that would not grant the pointer capture above --
+// the id would stay in ptrs, and from then on ptrs.size never falls back to zero,
+// so nothing would be tappable again until the page was reloaded.
+addEventListener('pointerup',upPtr); addEventListener('pointercancel',upPtr);
 canvas.addEventListener('wheel',e=>{camR=clampR(camR*(1+Math.sign(e.deltaY)*0.08));e.preventDefault();},{passive:false});
 $('#zin').onclick=()=>camR=clampR(camR*0.82); $('#zout').onclick=()=>camR=clampR(camR*1.2);
 function clampR(r){return Math.max(7,Math.min(70,r));}
@@ -1171,7 +1233,7 @@ function updateParticles(dt,t,ph){
 }
 
 /* ---------- HUD ---------- */
-let hudClock=0,lastMoney=-1,lastAfford='',lastSi=-1;
+let hudClock=0,lastMoney=-1,lastAfford='',lastSi=-1,lastHudH=-1;
 function onSeasonChange(si,prev){
   const arrivals=SPECIES.filter(s=>s.seasons.includes(si)&&!s.seasons.includes(prev)).map(s=>s.name);
   toast(`${SEASONS[si]} has arrived. New at the nursery: ${arrivals.join(', ')}.`,{label:'Shop',fn:openShop},8000);
@@ -1185,7 +1247,8 @@ function refreshHud(force){
   if(lastSi>=0&&si!==lastSi) onSeasonChange(si,lastSi); lastSi=si;
   $('#seasonTxt').textContent=`${SEASON_ICON[si]} ${SEASONS[si]}, ${left} min left`;
   $('#seasonBar').style.width=(frac*100).toFixed(1)+'%';
-  $('#hint').style.display=(trees.length||visiting)?'none':'block';
+  $('#hint').style.display=(trees.length||visiting||picked)?'none':'block';
+  const hh=$('#hud').offsetHeight; if(hh!==lastHudH){lastHudH=hh;document.documentElement.style.setProperty('--hud-h',hh+'px');}
   $('#waveChip').style.display=MP.avatars.size&&!visiting?'':'none';
   if(visiting) $('#visitTxt').textContent=`Visiting ${nameOf(visiting.owner)}’s arboretum`;
   if($('#shop').classList.contains('open')){const sig=shopTab+si+':'+SPECIES.map(s=>state.money>=priceOf(s,stage)?1:0).join('')+DECOR.map(d=>state.money>=d.price?1:0).join('');if(sig!==lastAfford||force){lastAfford=sig;renderList();}}
