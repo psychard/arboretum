@@ -121,7 +121,9 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .tree-row h3{margin:0;font-size:17px;font-weight:700;line-height:1.2}
 .tree-row p{margin:2px 0 0;font-size:14px;color:var(--muted);line-height:1.35}
 .rar{font-size:12px;font-style:italic;margin-left:4px}
-.buy{min-width:74px;text-align:center}
+.buy{min-width:74px;max-width:96px;text-align:center;line-height:1.2}
+.sec{padding:12px 6px 4px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
+.tree-row.off{opacity:.5}
 .buy .num{display:block;font-weight:700}
 .buy.cant .num{color:var(--bad)}
 .stats{padding:10px 18px 14px;font-size:14px;color:var(--muted);line-height:1.6;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center}
@@ -166,7 +168,7 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 <div id="shop" aria-hidden="true">
   <div class="shop-head"><h2>Nursery</h2><span class="wallet num" id="wallet">$100</span><button class="btn" id="closeShop">Close</button></div>
   <div class="seg" id="seg"></div>
-  <p class="stage-note">Older trees cost more but draw visitors sooner. Rare trees draw more of them.</p>
+  <p class="stage-note">Stock changes with every season. Older trees cost more but draw visitors sooner; rare trees draw more of them.</p>
   <div id="list"></div>
   <div class="stats" id="stats"></div>
 </div>
@@ -221,6 +223,12 @@ const SPECIES=[
  {id:'sequoia',name:'Giant Sequoia',rarity:'Legendary',price:600,shape:'tallcone',trunk:'#8a4a32',col:['#3e6638','#345c32','#3b5c34','#5f7a62'],fol:[1,1,1,1],desc:'The largest tree on Earth; it towers over everything.'}
 ];
 const SP={}; SPECIES.forEach(s=>SP[s.id]=s);
+/* seasonal nursery stock: 0 spring, 1 summer, 2 autumn, 3 winter */
+const AVAIL={oak:[0,2,3],birch:[0,2],maple:[1,2],apple:[0,3],pine:[2,3],willow:[0,1],paperbark:[0,3],cherry:[0],ginkgo:[2],trumpet:[1],
+  jmaple:[2,3],poinciana:[1],jacaranda:[0,1],dragon:[1,3],baobab:[1,2],sequoia:[3]};
+SPECIES.forEach(s=>s.seasons=AVAIL[s.id]||[0,1,2,3]);
+function curSeason(){return Math.floor(state.season/SEASON_LEN)%4;}
+function nextAvail(sp,si){for(let k=1;k<4;k++){if(sp.seasons.includes((si+k)%4))return (si+k)%4;}return si;}
 
 /* ---------- state ---------- */
 let state=fresh();
@@ -631,7 +639,7 @@ function onTap(cx,cy){
   if(hits.length){let o=hits[0].object;while(o&&!o.userData.tree)o=o.parent;if(o){const t=o.userData.tree;
     toast(`${t.sp.name}: ${Math.round(t.g*100)}% grown. ${t.sp.rarity}.`);}}
 }
-function pick(sp){picked=sp; ghostPos=null; ghost.visible=false; closeShop(); updateBanner();}
+function pick(sp){if(!sp.seasons.includes(curSeason()))return; picked=sp; ghostPos=null; ghost.visible=false; closeShop(); updateBanner();}
 function updateBanner(){
   const b=$('#banner'),txt=$('#bannerTxt'),pb=$('#plantBtn');
   if(!picked){b.style.display='none';ghost.visible=false;return;}
@@ -756,11 +764,16 @@ function renderSeg(){
 }
 function renderList(){
   const ph=state.season/SEASON_LEN;
-  $('#list').innerHTML=SPECIES.map(sp=>{const pr=priceOf(sp,stage),ok=state.money>=pr;
-    return `<div class="tree-row"><canvas class="thumb" width="144" height="144" data-id="${sp.id}" aria-hidden="true"></canvas>
-      <div><h3>${sp.name}<span class="rar" style="color:${RARITY[sp.rarity].c}">${sp.rarity}</span></h3><p>${sp.desc}</p></div>
-      <button class="btn buy ${ok?'':'cant'}" data-id="${sp.id}"><span class="num">$${pr.toLocaleString()}</span>${ok?'Choose':'Save up'}</button></div>`;}).join('');
-  $('#list').querySelectorAll('.buy').forEach(b=>b.onclick=()=>pick(SP[b.dataset.id]));
+  const si=curSeason();
+  const row=(sp,avail)=>{const pr=priceOf(sp,stage),ok=state.money>=pr;
+    const btn=avail?`<button class="btn buy ${ok?'':'cant'}" data-id="${sp.id}"><span class="num">$${pr.toLocaleString()}</span>${ok?'Choose':'Save up'}</button>`
+      :`<button class="btn buy" disabled><span class="num">$${pr.toLocaleString()}</span>Back in ${SEASONS[nextAvail(sp,si)].toLowerCase()}</button>`;
+    return `<div class="tree-row${avail?'':' off'}"><canvas class="thumb" width="144" height="144" data-id="${sp.id}" aria-hidden="true"></canvas>
+      <div><h3>${sp.name}<span class="rar" style="color:${RARITY[sp.rarity].c}">${sp.rarity}</span></h3><p>${sp.desc}</p></div>${btn}</div>`;};
+  const inS=SPECIES.filter(s=>s.seasons.includes(si)), outS=SPECIES.filter(s=>!s.seasons.includes(si));
+  $('#list').innerHTML=`<div class="sec">${SEASON_ICON[si]} In stock this ${SEASONS[si].toLowerCase()}</div>`+inS.map(s=>row(s,true)).join('')
+    +`<div class="sec">Out of season</div>`+outS.map(s=>row(s,false)).join('');
+  $('#list').querySelectorAll('.buy[data-id]').forEach(b=>b.onclick=()=>pick(SP[b.dataset.id]));
   $('#wallet').textContent='$'+Math.floor(state.money).toLocaleString();
   const mins=Math.floor(state.play/60);
   $('#stats').innerHTML=`<span>${trees.length} trees</span><span>${state.visitorsTotal} visitors</span><span>$${state.earned.toLocaleString()} in tickets</span><span>${mins} min played</span><button class="btn" id="reset">Start over</button>`;
@@ -822,16 +835,22 @@ function updateParticles(dt,t,ph){
 }
 
 /* ---------- HUD ---------- */
-let hudClock=0,lastMoney=-1,lastAfford='';
+let hudClock=0,lastMoney=-1,lastAfford='',lastSi=-1;
+function onSeasonChange(si,prev){
+  const arrivals=SPECIES.filter(s=>s.seasons.includes(si)&&!s.seasons.includes(prev)).map(s=>s.name);
+  toast(`${SEASONS[si]} has arrived. New at the nursery: ${arrivals.join(', ')}.`,{label:'Shop',fn:openShop},8000);
+  if(picked&&!picked.seasons.includes(si)){toast(`The ${picked.name} is out of season now.`);picked=null;ghostPos=null;updateBanner();}
+}
 function refreshHud(force){
   const m=Math.floor(state.money);
   if(m!==lastMoney||force){$('#money').textContent='$'+m.toLocaleString();lastMoney=m;}
   $('#vis').textContent=people.length; $('#cats').textContent=state.cats;
   const ph=state.season/SEASON_LEN, si=Math.floor(ph)%4, frac=ph-Math.floor(ph), left=Math.ceil((1-frac)*SEASON_LEN/60);
+  if(lastSi>=0&&si!==lastSi) onSeasonChange(si,lastSi); lastSi=si;
   $('#seasonTxt').textContent=`${SEASON_ICON[si]} ${SEASONS[si]}, ${left} min left`;
   $('#seasonBar').style.width=(frac*100).toFixed(1)+'%';
   $('#hint').style.display=trees.length?'none':'block';
-  if($('#shop').classList.contains('open')){const sig=SPECIES.map(s=>state.money>=priceOf(s,stage)?1:0).join('');if(sig!==lastAfford||force){lastAfford=sig;renderList();}}
+  if($('#shop').classList.contains('open')){const sig=si+':'+SPECIES.map(s=>state.money>=priceOf(s,stage)?1:0).join('');if(sig!==lastAfford||force){lastAfford=sig;renderList();}}
   if(picked) updateBanner();
 }
 
