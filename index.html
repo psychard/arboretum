@@ -6,136 +6,146 @@
 <title>The Painted Arboretum</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Alegreya:ital,wght@0,500;0,700;1,500&family=Alegreya+Sans:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#2a2620;
-  --panel:rgba(239,232,214,.94);
-  --panel-solid:#efe8d6;
-  --ink:#2c2619;
-  --muted:#6e624c;
-  --line:rgba(70,55,30,.22);
-  --accent:#2f5d50;
-  --accent-ink:#f4efe2;
-  --gold:#9a7424;
-  --bad:#9b3b26;
-  --chip:rgba(239,232,214,.88);
-  --shadow:0 6px 18px rgba(30,20,8,.28);
+  color-scheme:light;
+  --bg:#cdb68a;
+  --paper:#efe1bf;
+  --paper-2:#e2cb9c;
+  --ink:#4b3219;
+  --muted:#80603a;
+  --line:rgba(120,82,38,.42);
+  --accent:#5b8a4c;
+  --accent-ink:#fbf5e3;
+  --gold:#8f5f10;
+  --bad:#a8432a;
+  --chip:rgba(241,229,199,.93);
+  --shadow:0 6px 16px rgba(110,72,28,.32);
+  --hand:"Architects Daughter","Segoe Print","Bradley Hand","Comic Sans MS",cursive;
   box-sizing:border-box;
   padding-top:env(safe-area-inset-top,0px);
   padding-bottom:env(safe-area-inset-bottom,0px);
 }
+/* the parchment look stays light in both themes, so nothing turns black or dark gray */
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    color-scheme:dark;
-    --bg:#15130f;
-    --panel:rgba(40,34,26,.94);
-    --panel-solid:#28221a;
-    --ink:#efe5cf;
-    --muted:#b3a487;
-    --line:rgba(230,210,170,.18);
-    --accent:#6fae98;
-    --accent-ink:#13221d;
-    --gold:#e0b65a;
-    --bad:#e2856c;
-    --chip:rgba(40,34,26,.86);
-    --shadow:0 6px 18px rgba(0,0,0,.5);
+    color-scheme:light;--bg:#c4ab7c;--paper:#e9d9b4;--paper-2:#dcc393;--ink:#4b3219;--muted:#7c5c36;
+    --line:rgba(120,82,38,.45);--accent:#5b8a4c;--accent-ink:#fbf5e3;--gold:#8f5f10;--bad:#a8432a;
+    --chip:rgba(236,222,190,.93);--shadow:0 6px 16px rgba(110,72,28,.32);
   }
 }
 :root[data-theme="dark"]{
-  color-scheme:dark;
-  --bg:#15130f;--panel:rgba(40,34,26,.94);--panel-solid:#28221a;--ink:#efe5cf;--muted:#b3a487;
-  --line:rgba(230,210,170,.18);--accent:#6fae98;--accent-ink:#13221d;--gold:#e0b65a;--bad:#e2856c;
-  --chip:rgba(40,34,26,.86);--shadow:0 6px 18px rgba(0,0,0,.5);
+  color-scheme:light;--bg:#c4ab7c;--paper:#e9d9b4;--paper-2:#dcc393;--ink:#4b3219;--muted:#7c5c36;
+  --line:rgba(120,82,38,.45);--accent:#5b8a4c;--accent-ink:#fbf5e3;--gold:#8f5f10;--bad:#a8432a;
+  --chip:rgba(236,222,190,.93);--shadow:0 6px 16px rgba(110,72,28,.32);
 }
 *,*::before,*::after{box-sizing:inherit}
 html,body{height:100%;margin:0;overflow:hidden;background:var(--bg);color:var(--ink);
-  font-family:"Alegreya",Georgia,"Times New Roman",serif;-webkit-tap-highlight-color:transparent;
+  font-family:var(--hand);-webkit-tap-highlight-color:transparent;
   touch-action:none;user-select:none;-webkit-user-select:none}
 #c{position:fixed;inset:0;width:100%;height:100%;display:block}
 button{font:inherit;color:inherit;cursor:pointer}
-button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.num{font-family:"Alegreya Sans","Gill Sans",system-ui,sans-serif;font-variant-numeric:tabular-nums}
+button:focus-visible{outline:2px dashed var(--accent);outline-offset:2px}
+.num{font-family:var(--hand);font-variant-numeric:tabular-nums}
+
+/* aged paper */
+.paper{background-color:var(--paper);
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 .5 0 0 0 0 .35 0 0 0 0 .15 0 0 0 .11 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>"),
+    radial-gradient(ellipse at 12% 0%,rgba(255,251,236,.75),transparent 55%),
+    radial-gradient(ellipse at 100% 100%,rgba(160,110,45,.32),transparent 60%),
+    radial-gradient(ellipse at 0% 100%,rgba(160,110,45,.22),transparent 50%),
+    linear-gradient(var(--paper),var(--paper-2));
+  box-shadow:inset 0 0 34px rgba(140,92,36,.38),var(--shadow);
+  border:1px solid var(--line)}
 
 /* HUD */
 #hud{position:fixed;top:0;left:0;right:0;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 0;
   display:flex;flex-direction:column;gap:6px;pointer-events:none;z-index:5}
 .row{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
-.chip{pointer-events:auto;background:var(--chip);border:1px solid var(--line);border-radius:999px;
-  padding:5px 11px;font-size:14px;box-shadow:var(--shadow);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);
+.chip{pointer-events:auto;background:var(--chip);border:1px solid var(--line);border-radius:8px;
+  padding:4px 10px;font-size:14px;box-shadow:var(--shadow);
   display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
-#money{font-size:22px;padding:4px 14px;color:var(--gold);font-weight:700}
-#shopBtn{margin-left:auto;background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:700;font-size:16px;padding:7px 15px}
+#money{font-size:21px;padding:3px 12px;color:var(--gold)}
+#shopBtn{margin-left:auto;background:var(--accent);color:var(--accent-ink);border-color:transparent;font-size:16px;padding:6px 15px}
 #seasonChip{position:relative;overflow:hidden}
 #seasonBar{position:absolute;left:0;bottom:0;height:3px;background:var(--accent);opacity:.7;width:0}
-#hint{font-size:14px;font-style:italic;color:var(--ink);background:var(--chip);border-radius:10px;padding:4px 10px;
+#hint{font-size:14px;color:var(--ink);background:var(--chip);border-radius:8px;padding:4px 10px;
   align-self:flex-start;border:1px solid var(--line);display:none}
 
-/* planting banner */
-#banner{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 92px);z-index:6;
-  background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);
-  padding:10px 12px;display:none;gap:8px;align-items:center;flex-wrap:wrap;max-width:520px;margin:0 auto}
-#banner p{margin:0;flex:1 1 180px;font-size:15px;line-height:1.35}
-.btn{border:1px solid var(--line);background:transparent;border-radius:10px;padding:7px 12px;font-size:15px}
-.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:700}
+/* banners */
+#banner,#visitBar{position:fixed;left:12px;right:12px;top:calc(env(safe-area-inset-top,0px) + 92px);z-index:6;
+  border-radius:6px;padding:10px 12px;display:none;gap:8px;align-items:center;flex-wrap:wrap;max-width:520px;margin:0 auto}
+#banner p{margin:0;flex:1 1 180px;font-size:15px;line-height:1.4}
+#visitTxt{flex:1 1 160px;font-size:15px}
+.btn{border:1.5px solid var(--ink);background:rgba(255,250,235,.35);border-radius:5px;padding:6px 11px;font-size:15px;color:var(--ink)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
 .btn:disabled{opacity:.45;cursor:not-allowed}
 
 /* joystick */
 #joy{position:fixed;left:18px;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);width:112px;height:112px;border-radius:50%;
-  background:radial-gradient(circle at 50% 45%,rgba(255,250,235,.35),rgba(60,45,25,.35));
-  border:2px solid rgba(255,248,230,.55);box-shadow:var(--shadow);z-index:5;touch-action:none}
+  background:radial-gradient(circle at 50% 45%,rgba(255,250,235,.45),rgba(150,110,60,.35));
+  border:2px solid rgba(255,248,230,.7);box-shadow:var(--shadow);z-index:5;touch-action:none}
 #knob{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px 0 0 -23px;border-radius:50%;
-  background:radial-gradient(circle at 40% 35%,#f6efdc,#b9a77e);border:1px solid rgba(60,40,20,.4);
-  box-shadow:0 3px 8px rgba(0,0,0,.35)}
-#joy span{position:absolute;color:rgba(255,250,235,.8);font-size:11px;pointer-events:none}
+  background:radial-gradient(circle at 40% 35%,#fbf3de,#c9b083);border:1px solid rgba(120,82,38,.5);
+  box-shadow:0 3px 8px rgba(110,72,28,.4)}
 #zoom{position:fixed;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 22px);display:flex;flex-direction:column;gap:10px;z-index:5}
-#zoom button{width:46px;height:46px;border-radius:50%;background:var(--chip);border:1px solid var(--line);box-shadow:var(--shadow);font-size:24px;line-height:1}
+#zoom button{width:46px;height:46px;border-radius:50%;background:var(--chip);border:1px solid var(--line);box-shadow:var(--shadow);font-size:24px;line-height:1;color:var(--ink)}
 
-/* toasts and floaters */
+/* toasts, floaters and name tags */
 #toasts{position:fixed;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 150px);display:flex;flex-direction:column;align-items:center;gap:8px;z-index:7;pointer-events:none;padding:0 14px}
-.toast{pointer-events:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);
-  padding:8px 14px;font-size:15px;max-width:420px;display:flex;gap:10px;align-items:center;animation:tin .35s ease-out}
+.toast{pointer-events:auto;border-radius:6px;padding:8px 14px;font-size:15px;max-width:420px;display:flex;gap:10px;align-items:center;animation:tin .35s ease-out}
 .toast.out{opacity:0;transform:translateY(-6px);transition:all .4s}
 @keyframes tin{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
-.floater{position:fixed;z-index:4;pointer-events:none;color:#f7e3a1;font-weight:700;font-size:18px;
-  text-shadow:0 1px 3px rgba(40,25,5,.9);font-family:"Alegreya Sans",system-ui,sans-serif;animation:rise 1.6s ease-out forwards;transform:translate(-50%,-50%)}
+.floater{position:fixed;z-index:4;pointer-events:none;color:#fbe7a6;font-size:19px;
+  text-shadow:0 1px 3px rgba(110,60,15,.95);font-family:var(--hand);animation:rise 1.6s ease-out forwards;transform:translate(-50%,-50%)}
 @keyframes rise{from{opacity:0;margin-top:0}15%{opacity:1}to{opacity:0;margin-top:-60px}}
+.tag{position:fixed;z-index:4;pointer-events:none;transform:translate(-50%,-100%);background:var(--chip);border:1px solid var(--line);
+  border-radius:5px;padding:1px 8px;font-size:13px;white-space:nowrap;color:var(--ink)}
 
-/* shop sheet */
-#shop{position:fixed;left:0;right:0;bottom:0;z-index:8;background:var(--panel-solid);border-top:1px solid var(--line);
-  border-radius:20px 20px 0 0;box-shadow:0 -10px 30px rgba(20,12,4,.35);max-height:76%;display:flex;flex-direction:column;
+/* sheets: the shop and the gardeners list, written on old paper */
+.sheet{position:fixed;left:0;right:0;bottom:0;z-index:8;border-radius:6px 6px 0 0;border-bottom:0;
+  max-height:76%;display:flex;flex-direction:column;
   transform:translateY(105%);transition:transform .32s ease;padding-bottom:env(safe-area-inset-bottom,0px);max-width:640px;margin:0 auto}
-#shop.open{transform:none}
-.shop-head{display:flex;align-items:baseline;gap:10px;padding:14px 18px 6px}
-.shop-head h2{margin:0;font-size:24px;font-weight:700;flex:1}
-.shop-head .wallet{color:var(--gold);font-weight:700;font-size:18px}
-.seg{display:flex;margin:4px 18px 4px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.seg button{flex:1;border:0;background:transparent;padding:8px 4px;font-size:15px;line-height:1.15}
+.sheet::before{content:"";position:absolute;inset:7px 7px 0;border:1px solid var(--line);border-bottom:0;border-radius:3px 3px 0 0;pointer-events:none}
+.sheet.open{transform:none}
+.shop-head{display:flex;align-items:baseline;gap:10px;padding:16px 20px 2px}
+.shop-head h2{margin:0;font-size:26px;font-weight:400;flex:1;letter-spacing:.02em}
+.flourish{margin:0 20px 6px;text-align:center;color:var(--muted);font-size:13px;letter-spacing:.2em}
+.shop-head .wallet{color:var(--gold);font-size:19px}
+.seg{display:flex;margin:4px 18px 4px;border:1.5px solid var(--ink);border-radius:5px;overflow:hidden}
+.seg button{flex:1;border:0;background:transparent;padding:7px 4px;font-size:15px;line-height:1.2;color:var(--ink)}
+.seg button+button{border-left:1px dashed var(--line)}
 .seg button small{display:block;font-size:12px;color:var(--muted)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
-.seg button[aria-pressed="true"] small{color:inherit;opacity:.85}
-.stage-note{margin:4px 18px 8px;font-size:13px;color:var(--muted);font-style:italic}
-#list{overflow-y:auto;padding:0 12px 10px;-webkit-overflow-scrolling:touch;touch-action:pan-y}
-.tree-row{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px solid var(--line)}
-.tree-row canvas{width:72px;height:72px;display:block}
-.tree-row h3{margin:0;font-size:17px;font-weight:700;line-height:1.2}
-.tree-row p{margin:2px 0 0;font-size:14px;color:var(--muted);line-height:1.35}
-.rar{font-size:12px;font-style:italic;margin-left:4px}
-.buy{min-width:74px;max-width:96px;text-align:center;line-height:1.2}
-.sec{padding:12px 6px 4px;font-size:13px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);border-bottom:1px solid var(--line)}
+.seg button[aria-pressed="true"] small{color:inherit;opacity:.9}
+.stage-note{margin:4px 20px 8px;font-size:13px;color:var(--muted);line-height:1.45}
+#list,#plist{overflow-y:auto;padding:0 14px 10px;-webkit-overflow-scrolling:touch;touch-action:pan-y}
+.tree-row{display:grid;grid-template-columns:72px 1fr auto;gap:10px;align-items:center;padding:8px 6px;border-bottom:1px dashed var(--line)}
+.tree-row canvas{width:72px;height:72px;display:block;border-radius:50%;background:radial-gradient(circle,rgba(255,250,232,.55),transparent 70%)}
+.tree-row h3{margin:0;font-size:17px;font-weight:400;line-height:1.25}
+.tree-row p{margin:2px 0 0;font-size:13.5px;color:var(--muted);line-height:1.4}
+.rar{font-size:12px;margin-left:6px}
+.buy{min-width:74px;max-width:96px;text-align:center;line-height:1.25}
+.sec{padding:12px 6px 4px;font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);border-bottom:1.5px solid var(--line)}
 .tree-row.off{opacity:.5}
-.buy .num{display:block;font-weight:700}
+.buy .num{display:block}
 .buy.cant .num{color:var(--bad)}
-.stats{padding:10px 18px 14px;font-size:14px;color:var(--muted);line-height:1.6;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center}
-.stats .btn{margin-left:auto;font-size:13px;padding:5px 10px}
+.stats{padding:10px 20px 14px;font-size:13.5px;color:var(--muted);line-height:1.6;display:flex;flex-wrap:wrap;gap:4px 16px;align-items:center;border-top:1px dashed var(--line)}
+.stats .btn{margin-left:auto;font-size:13px;padding:4px 10px}
+.prow{display:flex;gap:10px;align-items:center;padding:10px 6px;border-bottom:1px dashed var(--line)}
+.prow>div{flex:1;min-width:0}
+.prow h3{margin:0;font-size:17px;font-weight:400}
+.prow p{margin:2px 0 0;font-size:13.5px;color:var(--muted)}
+.empty{font-size:14.5px;color:var(--muted);line-height:1.5;padding:6px}
 
 /* intro */
 #intro{position:fixed;inset:0;z-index:10;display:flex;align-items:center;justify-content:center;padding:20px;
-  background:rgba(25,18,8,.45)}
-.card{background:var(--panel-solid);border-radius:18px;padding:22px 22px 18px;max-width:420px;box-shadow:var(--shadow);border:1px solid var(--line)}
-.card h1{margin:0 0 6px;font-size:30px;line-height:1.1;font-style:italic;font-weight:500}
-.card p{margin:8px 0;font-size:16px;line-height:1.5}
-.card .btn.primary{width:100%;margin-top:10px;padding:11px;font-size:17px}
+  background:rgba(150,110,60,.35)}
+.card{border-radius:6px;padding:22px 22px 18px;max-width:420px}
+.card h1{margin:0 0 6px;font-size:30px;line-height:1.15;font-weight:400}
+.card p{margin:8px 0;font-size:15.5px;line-height:1.55}
+.card .btn.primary{width:100%;margin-top:10px;padding:10px;font-size:17px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -151,23 +161,29 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
     <div class="chip" id="visChip" title="Visitors in the arboretum">👥 <span class="num" id="vis">0</span></div>
     <div class="chip" id="seasonChip"><span id="seasonTxt">Spring</span><span id="seasonBar"></span></div>
     <div class="chip" title="Cat sightings">🐈 <span class="num" id="cats">0</span></div>
+    <button class="chip" id="playersBtn" style="display:none" aria-label="Fellow gardeners online">🧑‍🌾 <span class="num" id="online">0</span></button>
+    <button class="chip" id="waveChip" style="display:none" aria-label="Wave">👋</button>
   </div>
   <div id="hint">Plant your first tree; visitors only come to see trees.</div>
 </div>
 
-<div id="banner" role="status">
+<div id="banner" class="paper" role="status">
   <p id="bannerTxt"></p>
   <button class="btn primary" id="plantBtn" style="display:none">Plant</button>
   <button class="btn" id="rotBtn" style="display:none">Rotate</button>
   <button class="btn" id="doneBtn">Done</button>
 </div>
 
+<div id="visitBar" class="paper"><span id="visitTxt"></span><button class="btn" id="waveBtn">👋 Wave</button><button class="btn primary" id="homeBtn">Return home</button></div>
+<div id="tags"></div>
+
 <div id="joy" aria-label="Camera joystick"><div id="knob"></div></div>
 <div id="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button></div>
 <div id="toasts"></div>
 
-<div id="shop" aria-hidden="true">
+<div id="shop" class="paper sheet" aria-hidden="true">
   <div class="shop-head"><h2>Shop</h2><span class="wallet num" id="wallet">$100</span><button class="btn" id="closeShop">Close</button></div>
+  <p class="flourish">~ nursery &amp; garden supply ~</p>
   <div class="seg" id="tabs"></div>
   <div class="seg" id="seg"></div>
   <p class="stage-note" id="note">Stock changes with every season. Older trees cost more but draw visitors sooner; rare trees draw more of them.</p>
@@ -175,11 +191,19 @@ button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
   <div class="stats" id="stats"></div>
 </div>
 
+<div id="players" class="paper sheet" aria-hidden="true">
+  <div class="shop-head"><h2>Fellow gardeners</h2><button class="btn" id="closePlayers">Close</button></div>
+  <p class="flourish">~ who’s in the garden ~</p>
+  <p class="stage-note">Anyone playing right now appears here. Visit their arboretum to wander around, watch it grow and wave hello; only the owner can plant there.</p>
+  <div id="plist"></div>
+</div>
+
 <div id="intro">
-  <div class="card">
+  <div class="card paper">
     <h1>The Painted Arboretum</h1>
     <p>You have $100 and an empty meadow. Buy trees and garden decorations from the shop, then tap the ground to place them. Each visitor buys a $25 ticket.</p>
     <p>Trees grow while you play, and the seasons turn slowly; each one lasts an hour. Keep an eye out for the gray cat, who wanders by every five minutes.</p>
+    <p>Friends playing at the same time can visit each other’s arboretums from the 🧑‍🌾 button.</p>
     <p>Use the joystick in the corner to circle the garden, or drag the scene. Pinch or use + and − to zoom.</p>
     <button class="btn primary" id="begin">Begin</button>
   </div>
@@ -217,19 +241,19 @@ const SPECIES=[
  {id:'cherry',name:'Yoshino Cherry',rarity:'Rare',price:110,shape:'round',wide:true,trunk:'#5a3a32',col:['#f4b6c8','#5e8a3c','#c4562e','#7a4a3a'],fol:[1,.95,.85,0],desc:'A cloud of pink blossom each spring.'},
  {id:'ginkgo',name:'Ginkgo',rarity:'Rare',price:140,shape:'ginkgo',trunk:'#6a5a44',col:['#a6c95a','#6d9a3a','#f0c42a','#9a8a3a'],fol:[.85,1,1,0],desc:'A living fossil with fan-shaped leaves of pure gold.'},
  {id:'trumpet',name:'Yellow Trumpet Tree',rarity:'Rare',price:160,shape:'round',wide:true,trunk:'#6a5a46',col:['#f2c72a','#5a8a3a','#8a9a3a','#6a6a3a'],fol:[1,.95,.85,0],desc:'Covered in golden trumpet-shaped flowers each spring.'},
- {id:'jmaple',name:'Japanese Maple',rarity:'Exotic',price:220,shape:'umbrella',trunk:'#4a3a32',col:['#b0362e','#7e2c2c','#de2c1c','#6a2a22'],fol:[.9,1,1,0],desc:'Low, layered and crimson nearly all year.'},
+ {id:'jmaple',name:'Japanese Maple',rarity:'Exotic',price:220,shape:'umbrella',trunk:'#6e4e3c',col:['#b0362e','#7e2c2c','#de2c1c','#6a2a22'],fol:[.9,1,1,0],desc:'Low, layered and crimson nearly all year.'},
  {id:'poinciana',name:'Royal Poinciana',rarity:'Exotic',price:260,shape:'spread',trunk:'#7a6a58',col:['#6a9a3a','#d8401c','#6a8a34','#7a6a3a'],fol:[.9,1,.9,0],desc:'A flat, spreading crown that blazes scarlet in summer.'},
  {id:'jacaranda',name:'Jacaranda',rarity:'Exotic',price:300,shape:'round',wide:true,trunk:'#5a4636',col:['#9a7ad6','#5f8a3c','#b39a3a','#7a6a4a'],fol:[1,.95,.8,0],desc:'Spring brings a haze of violet flowers.'},
  {id:'dragon',name:'Dragon Blood Tree',rarity:'Exotic',price:380,shape:'dragon',trunk:'#8a7a62',col:['#4f7a3a','#3f6c34','#4a7034','#5c7a52'],fol:[1,1,1,1],desc:'An upturned umbrella from the island of Socotra; evergreen.'},
  {id:'baobab',name:'Baobab',rarity:'Exotic',price:450,shape:'baobab',trunk:'#9a8a78',col:['#8ab05a','#5f8a3a','#9a8a4a','#7a6a4a'],fol:[.65,.85,.5,0],desc:'A colossal bottle-shaped trunk with branches like roots.'},
- {id:'redoak',name:'Northern Red Oak',rarity:'Common',price:22,shape:'round',trunk:'#56463a',col:['#9ab85a','#3f6a2e','#b8281e','#6a3a2a'],fol:[.85,1,.95,0],desc:'Deep green all summer, then a rich crimson.'},
+ {id:'redoak',name:'Northern Red Oak',rarity:'Common',price:22,shape:'round',trunk:'#74583e',col:['#9ab85a','#3f6a2e','#b8281e','#6a3a2a'],fol:[.85,1,.95,0],desc:'Deep green all summer, then a rich crimson.'},
  {id:'rowan',name:'Rowan',rarity:'Common',price:26,shape:'round',trunk:'#6a5a4a',col:['#9ac05a','#5a8a3a','#e05a1e','#7a3a2a'],fol:[.8,1,.9,0],desc:'A small tree hung with orange berries in autumn.'},
  {id:'linden',name:'Linden',rarity:'Common',price:28,shape:'round',trunk:'#5a4a3a',col:['#a8c86a','#5a8a3a','#d2b84a','#7a6a3a'],fol:[.85,1,.85,0],desc:'Heart-shaped leaves and honey-scented summer flowers.'},
- {id:'pear',name:'Pear Tree',rarity:'Common',price:32,shape:'round',trunk:'#4a3a2e',col:['#f6f4ec','#4a7a34','#b8462a','#6a3a2a'],fol:[.95,1,.9,0],desc:'Snow-white spring blossom and glossy leaves.'},
+ {id:'pear',name:'Pear Tree',rarity:'Common',price:32,shape:'round',trunk:'#6e5238',col:['#f6f4ec','#4a7a34','#b8462a','#6a3a2a'],fol:[.95,1,.9,0],desc:'Snow-white spring blossom and glossy leaves.'},
  {id:'poplar',name:'Lombardy Poplar',rarity:'Uncommon',price:40,shape:'column',trunk:'#7a7060',col:['#a8c85a','#5f8a3a','#e0c43a','#8a7a4a'],fol:[.85,1,.9,0],desc:'A tall green exclamation mark on the skyline.'},
  {id:'cypress',name:'Italian Cypress',rarity:'Uncommon',price:55,shape:'column',trunk:'#5a4a3a',col:['#3a5a32','#2f522e','#34542f','#4a6448'],fol:[1,1,1,1],desc:'Dark, slender and evergreen; pure Tuscany.'},
- {id:'spruce',name:'Blue Spruce',rarity:'Uncommon',price:60,shape:'cone',trunk:'#4a3a2e',col:['#6f9aa0','#5f8c94','#628c90','#8aa8b0'],fol:[1,1,1,1],desc:'Silvery blue needles that glow against the snow.'},
- {id:'redbud',name:'Eastern Redbud',rarity:'Uncommon',price:65,shape:'round',trunk:'#4a3632',col:['#c8508a','#5a8a3a','#d0b03a','#6a4a3a'],fol:[1,1,.85,0],desc:'Bare branches burst into magenta before the leaves.'},
+ {id:'spruce',name:'Blue Spruce',rarity:'Uncommon',price:60,shape:'cone',trunk:'#6e5238',col:['#6f9aa0','#5f8c94','#628c90','#8aa8b0'],fol:[1,1,1,1],desc:'Silvery blue needles that glow against the snow.'},
+ {id:'redbud',name:'Eastern Redbud',rarity:'Uncommon',price:65,shape:'round',trunk:'#6e4a3a',col:['#c8508a','#5a8a3a','#d0b03a','#6a4a3a'],fol:[1,1,.85,0],desc:'Bare branches burst into magenta before the leaves.'},
  {id:'dogwood',name:'Flowering Dogwood',rarity:'Uncommon',price:75,shape:'umbrella',trunk:'#5a4636',col:['#f4f0e4','#4f7a34','#b8302a','#6a3a2a'],fol:[.95,1,.95,0],desc:'Layered branches of white spring bracts.'},
  {id:'magnolia',name:'Saucer Magnolia',rarity:'Uncommon',price:90,shape:'round',wide:true,trunk:'#6a6058',col:['#f2d2dc','#3f6a34','#8a7a3a','#6a5a4a'],fol:[1,1,.8,0],desc:'Great goblet flowers of pink and ivory.'},
  {id:'beech',name:'Copper Beech',rarity:'Rare',price:130,shape:'round',wide:true,trunk:'#8a8a84',col:['#9a5a5a','#5c2a36','#a0502a','#7a4a34'],fol:[.85,1,.95,0],desc:'Leaves the color of polished copper and wine.'},
@@ -238,8 +262,8 @@ const SPECIES=[
  {id:'monkey',name:'Monkey Puzzle',rarity:'Rare',price:190,shape:'whorl',trunk:'#6a5a4a',col:['#3f6234','#355a30','#3a5a32','#4a6446'],fol:[1,1,1,1],desc:'Spiky, prehistoric and slightly ridiculous.'},
  {id:'silkfloss',name:'Silk Floss Tree',rarity:'Exotic',price:280,shape:'round',wide:true,trunk:'#6a8a5a',col:['#5f8a3c','#4f7d34','#e87aa8','#7a6a4a'],fol:[.9,1,1,0],desc:'A green, spiny trunk that flowers bright pink in autumn.'},
  {id:'eucalyptus',name:'Rainbow Eucalyptus',rarity:'Exotic',price:320,shape:'narrow',trunk:'#9a7a6a',col:['#7aa07a','#6a9472','#7a9a74','#7a9a80'],fol:[1,1,1,1],desc:'Bark that peels into streaks of green, orange and violet.'},
- {id:'wisteria',name:'Wisteria Tree',rarity:'Exotic',price:340,shape:'willow',trunk:'#5a4a3e',col:['#a07ad8','#5f8a3c','#b8a03a','#7a6a4a'],fol:[1,.95,.8,0],desc:'Cascades of lilac flowers trailing like a curtain.'},
- {id:'bristlecone',name:'Bristlecone Pine',rarity:'Legendary',price:520,shape:'umbrella',trunk:'#b0a088',col:['#3f5a3a','#36522f','#3a5434','#4a5a46'],fol:[1,1,1,1],desc:'Among the oldest living things on Earth; gnarled and patient.'},
+ {id:'wisteria',name:'Wisteria Tree',rarity:'Exotic',price:340,shape:'willow',trunk:'#765a42',col:['#a07ad8','#5f8a3c','#b8a03a','#7a6a4a'],fol:[1,.95,.8,0],desc:'Cascades of lilac flowers trailing like a curtain.'},
+ {id:'bristlecone',name:'Bristlecone Pine',rarity:'Legendary',price:520,shape:'umbrella',trunk:'#b0a088',col:['#3f5a3a','#36522f','#3a5434','#5f7a58'],fol:[1,1,1,1],desc:'Among the oldest living things on Earth; gnarled and patient.'},
  {id:'sequoia',name:'Giant Sequoia',rarity:'Legendary',price:600,shape:'tallcone',trunk:'#8a4a32',col:['#3e6638','#345c32','#3b5c34','#5f7a62'],fol:[1,1,1,1],desc:'The largest tree on Earth; it towers over everything.'}
 ];
 const SP={}; SPECIES.forEach(s=>SP[s.id]=s);
@@ -261,9 +285,11 @@ function load(){
     if(!s||typeof s.money!=='number') return false; state=Object.assign(fresh(),s); return true;}catch(e){return false;}
 }
 function save(){
+  if(visiting) return;
   try{state.decor=decors.map(d=>({d:d.d.id,x:+d.x.toFixed(2),z:+d.z.toFixed(2),r:+d.r.toFixed(3)})); state.savedAt=Date.now();
     state.trees=trees.map(t=>({s:t.sp.id,x:+t.x.toFixed(2),z:+t.z.toFixed(2),g:+t.g.toFixed(4),seed:t.seed}));
     localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){}
+  publishWorld();
 }
 
 /* ---------- renderer ---------- */
@@ -506,15 +532,15 @@ function addTree(spId,x,z,g,seed){
 }
 
 /* ---------- people ---------- */
-const COATS=['#a2412e','#3f5f8a','#c9a23a','#5f7a4a','#7a4a7a','#d0763a','#2f4a5a','#b85a6a','#e8dcc0','#6a4a3a'];
+const COATS=['#a2412e','#3f5f8a','#c9a23a','#5f7a4a','#7a4a7a','#d0763a','#4f8a9a','#b85a6a','#e8dcc0','#6a4a3a'];
 const SKIN=['#f1c9a5','#d9a47a','#a8704a','#7a4a2e','#e8b896'];
 const people=[]; const legGeo=new THREE.CylinderGeometry(0.075,0.055,0.8,7); legGeo.translate(0,-0.4,0);
 const armGeo=new THREE.CylinderGeometry(0.052,0.04,0.6,6); armGeo.translate(0,-0.3,0);
-const HAIR=['#2a1e16','#4a3222','#7a5530','#b89060','#1a1a1a','#8a8a88','#6a2e1a'];
+const HAIR=['#6a4426','#5a3a22','#7a5530','#b89060','#9a4a26','#d8c8a8','#8a3a1a'];
 function makePerson(){
   const g=new THREE.Group(); g.rotation.order='YXZ'; const coat=mat(COATS[Math.floor(Math.random()*COATS.length)]);
-  const pants=mat(['#3a3530','#4a4a5a','#5a4a3a'][Math.floor(Math.random()*3)]);
-  const skin=mat(SKIN[Math.floor(Math.random()*SKIN.length)]), hairM=mat(HAIR[Math.floor(Math.random()*HAIR.length)]), shoeM=mat(['#2a2420','#4a3426','#e8e4dc'][Math.floor(Math.random()*3)]);
+  const pants=mat(['#6a5a8a','#4a6a8a','#8a6a4a'][Math.floor(Math.random()*3)]);
+  const skin=mat(SKIN[Math.floor(Math.random()*SKIN.length)]), hairM=mat(HAIR[Math.floor(Math.random()*HAIR.length)]), shoeM=mat(['#8a5a3a','#6a4a2e','#e8e4dc'][Math.floor(Math.random()*3)]);
   const legs=[-0.1,0.1].map(x=>{const l=new THREE.Mesh(legGeo,pants);l.position.set(x,0.86,0);
     const shoe=new THREE.Mesh(new THREE.BoxGeometry(0.11,0.08,0.24),shoeM);shoe.position.set(0,-0.8,0.05);l.add(shoe);g.add(l);return l;});
   const hips=new THREE.Mesh(new THREE.CylinderGeometry(0.19,0.2,0.2,10),pants); hips.position.y=0.9; hips.scale.z=0.75; g.add(hips);
@@ -529,7 +555,7 @@ function makePerson(){
   [-0.13,0.13].forEach(x=>{const e=new THREE.Mesh(new THREE.SphereGeometry(0.025,5,4),skin);e.position.set(x,0,0);head.add(e);});
   const hair=new THREE.Mesh(new THREE.SphereGeometry(0.14,12,8,0,Math.PI*2,0,Math.PI*0.55),hairM); hair.position.set(0,0.025,-0.012); hair.scale.set(1,1.12,1.05); hair.rotation.x=-0.25; head.add(hair);
   if(Math.random()<0.35){const long=new THREE.Mesh(new THREE.SphereGeometry(0.13,10,8),hairM);long.scale.set(1,1.5,0.6);long.position.set(0,-0.1,-0.07);head.add(long);}
-  if(Math.random()<0.35){const hm=mat(['#3a2f22','#e3d6b4','#5a2a2a','#2f3f4f'][Math.floor(Math.random()*4)]);
+  if(Math.random()<0.35){const hm=mat(['#8a5a3a','#e3d6b4','#9a3a3a','#4f6a8a'][Math.floor(Math.random()*4)]);
     const brim=new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.24,0.02,14),hm);brim.position.y=0.1;head.add(brim);
     const crown=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.14,0.13,12),hm);crown.position.y=0.17;head.add(crown);}
   shadowAll(g); g.scale.setScalar(0.93+Math.random()*0.15);
@@ -538,9 +564,9 @@ function makePerson(){
 function randGardenPoint(){
   for(let k=0;k<30;k++){
     if(trees.length&&Math.random()<0.7){const t=trees[Math.floor(Math.random()*trees.length)];const a=Math.random()*6.28,r=2+Math.random()*1.5;
-      const x=t.x+Math.cos(a)*r,z=t.z+Math.sin(a)*r; if(Math.hypot(x,z)<31&&Math.hypot(x-POND.x,z-POND.z)>POND_R+1) return new THREE.Vector3(x,0,z);}
+      const x=t.x+Math.cos(a)*r,z=t.z+Math.sin(a)*r; if(Math.hypot(x,z)<31&&!inWater(x,z,1)) return new THREE.Vector3(x,0,z);}
     const a=Math.random()*6.28,r=4+Math.random()*26;const x=Math.cos(a)*r,z=Math.sin(a)*r;
-    if(Math.hypot(x-POND.x,z-POND.z)>POND_R+1) return new THREE.Vector3(x,0,z);
+    if(!inWater(x,z,1)) return new THREE.Vector3(x,0,z);
   }
   return new THREE.Vector3(3,0,3);
 }
@@ -549,12 +575,11 @@ function spawnVisitor(){
   p.g.position.copy(start); scene.add(p.g);
   const path=[new THREE.Vector3((Math.random()-.5)*1.4,0,33)], acts={}, stopIdx=new Set();
   const stops=2+Math.floor(Math.random()*3);
-  let swimAdded=false;
+  let fedAdded=false;
   for(let i=0;i<stops;i++){
-    if(!swimAdded&&Math.random()<0.2){
-      const ponds=[{x:POND.x,z:POND.z,r:POND_R}].concat(decors.filter(d=>d.d.id==='minipond').map(d=>({x:d.x,z:d.z,r:1.5})));
-      const pd=ponds[Math.floor(Math.random()*ponds.length)],a=Math.random()*6.28;
-      path.push(new THREE.Vector3(pd.x+Math.cos(a)*(pd.r+0.4),0,pd.z+Math.sin(a)*(pd.r+0.4)));acts[path.length-1]={type:'swim',pd};swimAdded=true;continue;}
+    if(!fedAdded&&Math.random()<0.3){
+      const ponds=duckPonds(),pd=ponds[Math.floor(Math.random()*ponds.length)],a=Math.random()*6.28;
+      path.push(new THREE.Vector3(pd.x+Math.cos(a)*(pd.r+0.6),0,pd.z+Math.sin(a)*(pd.r+0.6)));acts[path.length-1]={type:'feed',pd};fedAdded=true;continue;}
     const usable=decors.filter(d=>d.d.act);
     if(usable.length&&Math.random()<0.55){
       const d=usable[Math.floor(Math.random()*usable.length)];
@@ -568,13 +593,19 @@ function spawnVisitor(){
   path.push(new THREE.Vector3((Math.random()-.5)*1.4,0,33), new THREE.Vector3((Math.random()-.5)*1.4,0,46));
   const v={p,path,i:0,pause:0,phase:Math.random()*6,speed:1.2+Math.random()*0.4,stops:stopIdx,acts,sitting:null,looking:false};
   people.push(v);
-  state.money+=TICKET; state.earned+=TICKET; state.visitorsTotal++;
-  floatText('+$'+TICKET, new THREE.Vector3(0,3.6,35));
+  if(!visiting){state.money+=TICKET; state.earned+=TICKET; state.visitorsTotal++;
+  floatText('+$'+TICKET, new THREE.Vector3(0,3.6,35));}
 }
-function walkTo(obj,target,speed,dt){
+function walkTo(obj,target,speed,dt,avoid){
   const d=new THREE.Vector3().subVectors(target,obj.position); d.y=0; const dist=d.length();
   if(dist<0.15) return true;
-  const step=Math.min(dist,speed*dt); d.normalize(); obj.position.addScaledVector(d,step);
+  d.normalize();
+  if(avoid){const ob=waterObstacles(),px=obj.position.x,pz=obj.position.z;
+    for(const c of ob){const ox=px-c.x,oz=pz-c.z,od=Math.hypot(ox,oz)||0.001;
+      if(od<c.r+0.1){d.set(ox/od,0,oz/od);break;}
+      const look=Math.min(1.2,dist),ax=px+d.x*look-c.x,az=pz+d.z*look-c.z;
+      if(Math.hypot(ax,az)<c.r+0.35&&Math.hypot(target.x-c.x,target.z-c.z)>c.r){let tx=-oz/od,tz=ox/od;if(tx*d.x+tz*d.z<0){tx=-tx;tz=-tz;}d.set(tx,0,tz);break;}}}
+  const step=Math.min(dist,speed*dt); obj.position.addScaledVector(d,step);
   const want=Math.atan2(d.x,d.z); let diff=want-obj.rotation.y; diff=Math.atan2(Math.sin(diff),Math.cos(diff)); obj.rotation.y+=diff*Math.min(1,dt*6);
   return false;
 }
@@ -648,7 +679,9 @@ function updatePeople(dt){
     if(v.swim){updateSwim(v,dt);continue;}
     if(v.pause>0){v.pause-=dt;
       if(!v.sitting){v.p.legs.forEach(l=>l.rotation.x*=0.85);v.p.arms.forEach(m=>m.rotation.x*=0.85);}
-      if(v.chat){const talk=(Math.floor(now/1400)+v.chat.k)%2===0;v.p.head.rotation.y*=0.8;
+      if(v.feeding){v.p.arms[1].rotation.x=-0.5-0.9*Math.max(0,Math.sin(now/320+k));v.p.head.rotation.x=0.3;v.p.head.rotation.y=Math.sin(now/1100+k)*0.2;
+        if(Math.random()<dt*0.45)floatText('🍞',g.position.clone().setY(1.9));}
+      else if(v.chat){const talk=(Math.floor(now/1400)+v.chat.k)%2===0;v.p.head.rotation.y*=0.8;
         v.p.head.rotation.x=talk?Math.sin(now/180)*0.08:Math.sin(now/420)*0.15;
         if(talk) v.p.arms[1].rotation.x=-0.6-0.35*Math.sin(now/260);
         if(talk&&now>v.chat.next){v.chat.next=now+2200+Math.random()*2000;floatText(['💬','😄','🌳','🐈','👍'][Math.floor(Math.random()*5)],g.position.clone().setY(2.3));}}
@@ -659,16 +692,16 @@ function updatePeople(dt){
         else{v.p.head.rotation.y=Math.sin(now/900+k)*0.5;v.p.head.rotation.x=-0.12+Math.sin(now/1400+k)*0.1;}}
       else{v.p.head.rotation.y=Math.sin(now/900+k)*(v.looking?0.25:0.5);
         v.p.head.rotation.x=(v.looking?0.4:-0.12)+Math.sin(now/1400+k)*0.1;}
-      if(v.pause<=0){if(v.sitting)standUp(v);v.looking=false;v.chat=null;}
+      if(v.pause<=0){if(v.sitting)standUp(v);v.looking=false;v.chat=null;v.feeding=null;}
       continue;}
     v.phase+=dt*v.speed*6; const sw=Math.sin(v.phase)*0.5; v.p.legs[0].rotation.x=sw; v.p.legs[1].rotation.x=-sw;
     v.p.arms[0].rotation.x=-sw*0.75; v.p.arms[1].rotation.x=sw*0.75; v.p.head.rotation.x*=0.9;
     if(v.wave&&v.wave>now){v.p.arms[1].rotation.x=-2.7;v.p.arms[1].rotation.z=-0.3-0.35*Math.sin(now/90);}
     else if(v.wave){v.wave=0;v.p.arms[1].rotation.z=-0.06;}
-    if(walkTo(g,v.path[v.i],v.speed,dt)){
+    if(walkTo(g,v.path[v.i],v.speed,dt,true)){
       const a=v.acts[v.i];
       if(a&&a.type==='sit') sitDown(v,a);
-      else if(a&&a.type==='swim') startSwim(v,a.pd);
+      else if(a&&a.type==='feed') startFeed(v,a.pd);
       else if(a&&a.type==='look'){v.looking=true;v.pause=3+Math.random()*4;g.rotation.y=Math.atan2(a.d.x-g.position.x,a.d.z-g.position.z);}
       else if(v.stops.has(v.i)) v.pause=2.5+Math.random()*5;
       v.i++;
@@ -681,7 +714,7 @@ function updatePeople(dt){
 /* ---------- the cat ---------- */
 let cat=null;
 function makeCat(){
-  const g=new THREE.Group(); const fur=mat('#8e8e93'), dark=mat('#68686e');
+  const g=new THREE.Group(); const fur=mat('#a8a8ae'), dark=mat('#93939a');
   const body=new THREE.Mesh(new THREE.SphereGeometry(0.28,10,8),fur); body.scale.set(1,0.85,1.7); body.position.y=0.4; g.add(body);
   const head=new THREE.Group(); head.position.set(0,0.62,0.44); g.add(head);
   head.add(new THREE.Mesh(new THREE.SphereGeometry(0.2,10,8),fur));
@@ -703,7 +736,7 @@ function spawnCat(){
   toast('A gray cat has wandered into the arboretum.',{label:'Look',fn:()=>{focusOn=cat?cat.c.g.position:null; camR=Math.min(camR,18);}},8000);
 }
 function randCatSpot(){for(let k=0;k<20;k++){const a=Math.random()*6.28,r=7+Math.random()*20;const x=Math.cos(a)*r,z=Math.sin(a)*r;
-  if(Math.hypot(x-POND.x,z-POND.z)>POND_R+1.5) return new THREE.Vector3(x,0,z);} return new THREE.Vector3(8,0,-8);}
+  if(!inWater(x,z,1.5)) return new THREE.Vector3(x,0,z);} return new THREE.Vector3(8,0,-8);}
 function updateCat(dt){
   if(!cat) return; const c=cat.c; cat.phase+=dt;
   c.tail.rotation.z=Math.sin(cat.phase*2.2)*0.5;
@@ -713,7 +746,7 @@ function updateCat(dt){
     return;
   }
   const sw=Math.sin(cat.phase*9)*0.5; c.legs[0].rotation.x=sw;c.legs[3].rotation.x=sw;c.legs[1].rotation.x=-sw;c.legs[2].rotation.x=-sw;
-  const done=walkTo(c.g,cat.state==='in'?cat.target:cat.exit,1.5,dt);
+  const done=walkTo(c.g,cat.state==='in'?cat.target:cat.exit,1.5,dt,true);
   if(done){ if(cat.state==='in') cat.state='sit'; else {scene.remove(c.g); if(focusOn===c.g.position) focusOn=null; cat=null;} }
 }
 
@@ -777,7 +810,7 @@ Object.assign(DC.bench,{act:'sit',seatY:0.55,seats:[[-0.45,-0.02,0],[0.45,-0.02,
 Object.assign(DC.picnic,{act:'sit',seatY:0.5,seats:[[-0.5,0.72,Math.PI],[0.5,0.72,Math.PI],[-0.5,-0.72,0],[0.5,-0.72,0]]});
 Object.assign(DC.gazebo,{act:'sit',seatY:0.66,seats:[[-0.35,1.42,Math.PI],[0.35,1.42,Math.PI],[-0.35,-1.42,0],[0.35,-1.42,0]]});
 ['flowers','birdbath','minipond'].forEach(id=>DC[id].act='look'); DC.bridge.act='bridge';
-const DM={wood:mat('#6a4a30'),dark:mat('#4a3424'),stone:mat('#a59c8c'),iron:mat('#2e2e33'),soil:mat('#5a4030'),reed:mat('#5a7a3a'),roof:mat('#8a3a2e'),
+const DM={wood:mat('#6a4a30'),dark:mat('#7a5636'),stone:mat('#a59c8c'),iron:mat('#5f8f7f'),soil:mat('#5a4030'),reed:mat('#5a7a3a'),roof:mat('#8a3a2e'),
   glow:new THREE.MeshBasicMaterial({color:'#ffe2a0'}),flower:mat('#e86a8a')};
 const FLOWER_C=toCols(['#e86a8a','#e8c03a','#d0702a','#8a7a6a']);
 const V3=(x,y,z)=>new THREE.Vector3(x,y,z);
@@ -818,7 +851,61 @@ function makeDecor(id){
   shadowAll(g); return g;
 }
 function addDecor(id,x,z,r){const d=DC[id];if(!d)return null;const g=makeDecor(id);g.position.set(x,0,z);g.rotation.y=r||0;
-  const o={d,group:g,x,z,r:r||0,occ:[]};g.userData.decor=o;decorRoot.add(g);decors.push(o);return o;}
+  const o={d,group:g,x,z,r:r||0,occ:[]};g.userData.decor=o;decorRoot.add(g);decors.push(o);obsDirty=true;ducksDirty=true;return o;}
+
+/* ---------- water obstacles and ducks ---------- */
+let obsDirty=true, OBS=[], ducksDirty=true; const ducks=[];
+function waterObstacles(){
+  if(!obsDirty) return OBS; obsDirty=false; OBS=[{x:POND.x,z:POND.z,r:POND_R+0.2}];
+  for(const d of decors){
+    if(d.d.id==='minipond') OBS.push({x:d.x,z:d.z,r:1.7});
+    if(d.d.id==='bridge') [[-1.4,0.85],[1.4,0.85],[-2.3,0.8],[2.3,0.8]].forEach(([lx,r])=>{const p=localToWorld(d,lx,0);OBS.push({x:p.x,z:p.z,r});});
+  }
+  return OBS;
+}
+function inWater(x,z,m){for(const c of waterObstacles()) if(Math.hypot(x-c.x,z-c.z)<c.r+(m||0)) return true; return false;}
+function duckPonds(){return [{x:POND.x,z:POND.z,r:POND_R}].concat(decors.filter(d=>d.d.id==='minipond').map(d=>({x:d.x,z:d.z,r:1.5})));}
+function makeDuck(){
+  const g=new THREE.Group(), male=Math.random()<0.5;
+  const bodyM=mat(male?'#d2cab6':'#a8825a'), headM=mat(male?'#3f8a52':'#94704a'), wingM=mat(male?'#b9b098':'#8e6a44'), chestM=mat(male?'#94603c':'#a8825a');
+  const body=new THREE.Mesh(new THREE.SphereGeometry(0.22,10,8),bodyM); body.scale.set(0.85,0.6,1.3); body.position.y=0.08; g.add(body);
+  const chest=new THREE.Mesh(new THREE.SphereGeometry(0.15,8,6),chestM); chest.position.set(0,0.1,0.17); g.add(chest);
+  [-1,1].forEach(sd=>{const w=new THREE.Mesh(new THREE.SphereGeometry(0.15,8,6),wingM);w.scale.set(0.35,0.5,1.1);w.position.set(sd*0.15,0.12,-0.03);g.add(w);});
+  const tail=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.16,5),bodyM); tail.rotation.x=-1.9; tail.position.set(0,0.16,-0.3); g.add(tail);
+  const neck=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.07,0.16,6),male?headM:bodyM); neck.position.set(0,0.2,0.2); g.add(neck);
+  const head=new THREE.Group(); head.position.set(0,0.3,0.22); g.add(head);
+  head.add(new THREE.Mesh(new THREE.SphereGeometry(0.1,10,8),headM));
+  if(male){const collar=new THREE.Mesh(new THREE.TorusGeometry(0.075,0.015,5,12),mat('#f4f0e4'));collar.rotation.x=Math.PI/2;collar.position.y=-0.08;head.add(collar);}
+  const bill=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.03,0.12),mat('#e8a23a')); bill.position.set(0,-0.02,0.12); head.add(bill);
+  shadowAll(g); g.scale.setScalar(1.25);
+  return {g,head};
+}
+function syncDucks(){
+  ducks.splice(0).forEach(k=>scene.remove(k.m.g));
+  duckPonds().forEach((pd,i)=>{const n=i===0?5:2;for(let j=0;j<n;j++){const m=makeDuck(),a=Math.random()*6.28,r=Math.random()*(pd.r-0.6);
+    m.g.position.set(pd.x+Math.cos(a)*r,0,pd.z+Math.sin(a)*r);m.g.rotation.y=Math.random()*6.28;scene.add(m.g);
+    ducks.push({m,pond:pd,target:null,feed:null,seed:Math.random()*10});}});
+}
+function startFeed(v,pd){
+  const g=v.p.g,dx=pd.x-g.position.x,dz=pd.z-g.position.z,l=Math.hypot(dx,dz)||1;
+  g.rotation.y=Math.atan2(dx,dz); v.feeding=pd; v.pause=7+Math.random()*5;
+  const pt=new THREE.Vector3(g.position.x+dx/l*1.6,0,g.position.z+dz/l*1.6), until=performance.now()+v.pause*1000;
+  ducks.filter(k=>k.pond.x===pd.x&&k.pond.z===pd.z).forEach(k=>{k.feed={pt,until};k.target=null;});
+  floatText('🍞',g.position.clone().setY(2.2));
+}
+function updateDucks(dt){
+  const now=performance.now(), frozen=curSeason()===3;
+  for(const k of ducks){const g=k.m.g;
+    if(k.feed&&k.feed.until<now) k.feed=null;
+    if(!k.target||walkTo(g,k.target,k.feed?0.9:0.32,dt)){
+      if(k.feed) k.target=k.feed.pt.clone().add(new THREE.Vector3((Math.random()-.5)*0.9,0,(Math.random()-.5)*0.9));
+      else{const a=Math.random()*6.28,r=Math.sqrt(Math.random())*Math.max(0.3,k.pond.r-0.6);k.target=new THREE.Vector3(k.pond.x+Math.cos(a)*r,0,k.pond.z+Math.sin(a)*r);}
+    }
+    g.position.y=(frozen?0.03:0)+Math.sin(now/600+k.seed)*0.02;
+    k.m.head.rotation.x=k.feed?Math.max(0,Math.sin(now/180+k.seed))*0.7:Math.sin(now/1500+k.seed)*0.15;
+    if(k.feed&&Math.random()<dt*0.2) floatText('🦆',g.position.clone().setY(0.9));
+  }
+}
 
 /* ---------- planting ---------- */
 let stage=STAGES[0], picked=null, ghostPos=null, pickRot=0, shopTab='trees';
@@ -1024,20 +1111,22 @@ function renderList(){
   $('#stats').innerHTML=`<span>${trees.length} trees</span><span>${decors.length} decorations</span><span>${state.visitorsTotal} visitors</span><span>$${state.earned.toLocaleString()} in tickets</span><span>${mins} min played</span><button class="btn" id="reset">Start over</button>`;
   let armed=false; const rb=$('#reset'); rb.onclick=()=>{ if(!armed){armed=true;rb.textContent='Tap again to erase';setTimeout(()=>{armed=false;if(rb.isConnected)rb.textContent='Start over';},3000);return;} resetGame(); };
 }
-function openShop(){renderSeg();renderList();$('#shop').classList.add('open');$('#shop').setAttribute('aria-hidden','false');}
+function openShop(){if(visiting){toast('You can only shop in your own arboretum.');return;}renderSeg();renderList();$('#shop').classList.add('open');$('#shop').setAttribute('aria-hidden','false');}
 function closeShop(){$('#shop').classList.remove('open');$('#shop').setAttribute('aria-hidden','true');}
 $('#shopBtn').onclick=openShop; $('#closeShop').onclick=closeShop;
 function resetGame(){
+  if(visiting) leaveVisit(true);
+  obsDirty=true; ducksDirty=true;
   trees.slice().forEach(t=>treeRoot.remove(t.group)); trees.length=0;
   decors.slice().forEach(d=>decorRoot.remove(d.group)); decors.length=0;
-  people.forEach(v=>{scene.remove(v.p.g);if(v.ripple)scene.remove(v.ripple);}); people.length=0; if(cat){scene.remove(cat.c.g);cat=null;}
+  clearPeople(); if(cat){scene.remove(cat.c.g);cat=null;}
   state=fresh(); state.started=true; picked=null; updateBanner(); save(); closeShop(); refreshHud(true); toast('A fresh meadow and $100 to spend.');
 }
 
 /* ---------- toasts and floaters ---------- */
 function toast(msg,action,ms){
   const box=$('#toasts'); while(box.children.length>2) box.firstChild.remove();
-  const t=document.createElement('div'); t.className='toast'; const s=document.createElement('span'); s.textContent=msg; t.appendChild(s);
+  const t=document.createElement('div'); t.className='toast paper'; const s=document.createElement('span'); s.textContent=msg; t.appendChild(s);
   if(action){const b=document.createElement('button');b.className='btn primary';b.textContent=action.label;b.onclick=()=>{action.fn();t.remove();};t.appendChild(b);}
   box.appendChild(t); setTimeout(()=>{t.classList.add('out');setTimeout(()=>t.remove(),450);},ms||2600);
 }
@@ -1096,7 +1185,9 @@ function refreshHud(force){
   if(lastSi>=0&&si!==lastSi) onSeasonChange(si,lastSi); lastSi=si;
   $('#seasonTxt').textContent=`${SEASON_ICON[si]} ${SEASONS[si]}, ${left} min left`;
   $('#seasonBar').style.width=(frac*100).toFixed(1)+'%';
-  $('#hint').style.display=trees.length?'none':'block';
+  $('#hint').style.display=(trees.length||visiting)?'none':'block';
+  $('#waveChip').style.display=MP.avatars.size&&!visiting?'':'none';
+  if(visiting) $('#visitTxt').textContent=`Visiting ${nameOf(visiting.owner)}’s arboretum`;
   if($('#shop').classList.contains('open')){const sig=shopTab+si+':'+SPECIES.map(s=>state.money>=priceOf(s,stage)?1:0).join('')+DECOR.map(d=>state.money>=d.price?1:0).join('');if(sig!==lastAfford||force){lastAfford=sig;renderList();}}
   if(picked) updateBanner();
 }
@@ -1108,19 +1199,149 @@ function loop(now){
   if(running){
     state.play+=dt; state.season=(state.season+dt)%(SEASON_LEN*4);
     if(trees.length){visitorClock+=dt; const iv=Math.max(3,Math.min(40,35/(1+beauty()*0.3)));
-      if(visitorClock>=iv){visitorClock=0; if(people.length<22) spawnVisitor(); else {state.money+=TICKET;state.earned+=TICKET;state.visitorsTotal++;floatText('+$'+TICKET,new THREE.Vector3(0,3.6,35));}}}
+      if(visitorClock>=iv){visitorClock=0; if(people.length<22) spawnVisitor(); else if(!visiting){state.money+=TICKET;state.earned+=TICKET;state.visitorsTotal++;floatText('+$'+TICKET,new THREE.Vector3(0,3.6,35));}}}
     if(state.play>=state.nextCat){state.nextCat+=CAT_EVERY; if(!cat) spawnCat();}
-    updateTrees(dt,t); updatePeople(dt); updateSocial(dt); updateCat(dt);
+    updateTrees(dt,t); updatePeople(dt); updateSocial(dt); updateCat(dt); updateDucks(dt);
     saveClock+=dt; if(saveClock>5){saveClock=0;save();}
   }
   const ph=state.season/SEASON_LEN; applySeason(ph,t); updateParticles(dt,t,ph);
   if(focusOn&&(joyX||joyY)&&!cat) focusOn=null;
+  if(ducksDirty){ducksDirty=false;syncDucks();}
   updateCamera(dt);
+  updateAvatars(dt); presClock+=dt; if(presClock>0.3){presClock=0;sendPresence();}
   renderThumbs(dt,t);
   hudClock+=dt; if(hudClock>0.25){hudClock=0;refreshHud();}
   renderer.setRenderTarget(rt); renderer.render(scene,camera); renderer.setRenderTarget(null); renderer.render(postScene,postCam);
   requestAnimationFrame(loop);
 }
+
+/* ---------- multiplayer: visit other gardeners’ arboretums ---------- */
+const MP={room:null,db:null,user:null,myId:null,canPublish:true,lastSig:'',lastPub:0,ver:0,peers:[],names:{},avatars:new Map(),wasHere:new Set()};
+let visiting=null, presClock=0, lastPres='';
+const currentWorld=()=>visiting?visiting.owner:MP.myId;
+const AV_RING=new THREE.RingGeometry(0.45,0.6,24);
+function hashStr(t){let h=0;for(let i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return Math.abs(h);}
+function peerKey(p){const pr=p.presence||{};return p.by||(typeof pr.home==='string'?pr.home:null)||p.peer;}
+function nameOf(id){return (id&&MP.names[id])||'A fellow gardener';}
+async function initMultiplayer(){
+  if(!window.claude||typeof window.claude.use!=='function') return;
+  try{
+    const [room,db,user]=await Promise.all([window.claude.use('room'),window.claude.use('db'),window.claude.use('user')]);
+    MP.db=db; MP.user=user; MP.myId=user?await user.id():null;
+    if(!room) return; MP.room=room;
+    $('#playersBtn').style.display='';
+    room.onPeers(ch=>{MP.peers=ch.peers;onPeersChanged();},()=>{});
+    room.on('wave',msg=>{const d=msg.data||{};if(typeof d.world!=='string'||d.world!==currentWorld())return;
+      const av=MP.avatars.get(msg.peer),pos=av?av.p.g.position.clone():camTarget.clone();floatText('👋',pos.setY(2.5));
+      if(!msg.isMe) toast(`${nameOf(msg.by)} waves at you.`);},()=>{});
+    sendPresence(true); publishWorld(true);
+  }catch(e){}
+}
+function sendPresence(force){
+  if(!MP.room) return;
+  const p={home:MP.myId||null,world:currentWorld()||null,x:Math.round(camTarget.x*10)/10,z:Math.round(camTarget.z*10)/10};
+  const sig=JSON.stringify(p); if(!force&&sig===lastPres) return; lastPres=sig; MP.room.presence(p).catch(()=>{});
+}
+function publishWorld(force){
+  if(!MP.db||!MP.myId||visiting||!MP.canPublish||!state.started) return;
+  const sig=JSON.stringify([(state.trees||[]).map(t=>[t.s,t.x,t.z,Math.round(t.g*50)]),state.decor||[]]), now=Date.now();
+  if(!force&&sig===MP.lastSig&&now-MP.lastPub<120000) return;
+  if(sig!==MP.lastSig) MP.ver=now; MP.lastSig=sig; MP.lastPub=now;
+  MP.db.doc('worlds/'+MP.myId).set({trees:state.trees||[],decor:state.decor||[],season:Math.round(state.season),at:now,ver:MP.ver})
+    .catch(e=>{if(e&&['not_granted','capability_disabled','capability_removed','revoked'].includes(e.code))MP.canPublish=false;});
+}
+function onPeersChanged(){
+  const others=MP.peers.filter(p=>!p.isMe&&p.kind==='viewer');
+  const ids=new Set(others.map(peerKey)); others.forEach(p=>{const w=(p.presence||{}).world;if(typeof w==='string')ids.add(w);});
+  if(visiting) ids.add(visiting.owner);
+  if(MP.user&&ids.size) MP.user.profiles([...ids]).then(ps=>{let ch=false;for(const id of ids){const n=(ps[id]&&ps[id].name)||'';if(MP.names[id]!==n){MP.names[id]=n;ch=true;}}if(ch)renderPlayers();}).catch(()=>{});
+  const people_=new Set(others.map(peerKey)); $('#online').textContent=people_.size;
+  if(!visiting&&MP.myId){
+    const here=new Set(others.filter(p=>(p.presence||{}).world===MP.myId).map(peerKey));
+    for(const id of here) if(!MP.wasHere.has(id)) toast(`${nameOf(id)} is visiting your arboretum.`,{label:'👋 Wave',fn:sendWave},6000);
+    MP.wasHere=here;
+  }
+  syncAvatars(); renderPlayers();
+}
+function syncAvatars(){
+  const w=currentWorld(), want=new Map();
+  for(const p of MP.peers){if(p.isMe||p.kind!=='viewer')continue;const pr=p.presence||{};if(!w||pr.world!==w)continue;
+    const x=+pr.x,z=+pr.z;if(!isFinite(x)||!isFinite(z))continue;
+    want.set(p.peer,{x:Math.max(-34,Math.min(34,x)),z:Math.max(-34,Math.min(40,z)),key:peerKey(p)});}
+  for(const [peer,av] of MP.avatars) if(!want.has(peer)){scene.remove(av.p.g);av.tag.remove();MP.avatars.delete(peer);}
+  for(const [peer,info] of want){let av=MP.avatars.get(peer);
+    if(!av){const p=makePerson();const ring=new THREE.Mesh(AV_RING,new THREE.MeshBasicMaterial({color:'#f2c14e',transparent:true,opacity:0.85,depthWrite:false}));
+      ring.rotation.x=-Math.PI/2;ring.position.y=0.05;p.g.add(ring);p.g.position.set(info.x,0,info.z);scene.add(p.g);
+      const tag=document.createElement('div');tag.className='tag';$('#tags').appendChild(tag);av={p,tag,phase:0,shown:''};MP.avatars.set(peer,av);}
+    const off=(hashStr(peer)%628)/100; av.target=new THREE.Vector3(info.x+Math.cos(off)*1.4,0,info.z+Math.sin(off)*1.4); av.key=info.key;}
+}
+function updateAvatars(dt){
+  for(const [,av] of MP.avatars){const g=av.p.g;
+    if(!walkTo(g,av.target,3.2,dt,true)){av.phase+=dt*10;const sw=Math.sin(av.phase)*0.5;av.p.legs[0].rotation.x=sw;av.p.legs[1].rotation.x=-sw;av.p.arms[0].rotation.x=-sw*0.7;av.p.arms[1].rotation.x=sw*0.7;}
+    else{av.p.legs.forEach(l=>l.rotation.x*=0.8);av.p.arms.forEach(a=>a.rotation.x*=0.8);}
+    const nm=nameOf(av.key); if(av.shown!==nm){av.shown=nm;av.tag.textContent=nm;}
+    const v=g.position.clone().setY(2.35).project(camera),vis=v.z<1&&Math.abs(v.x)<1.05&&Math.abs(v.y)<1.05;
+    av.tag.style.display=vis?'':'none'; if(vis){av.tag.style.left=((v.x+1)/2*innerWidth)+'px';av.tag.style.top=((1-v.y)/2*innerHeight)+'px';}
+  }
+}
+function sendWave(){if(MP.room)MP.room.emit('wave',{world:currentWorld()}).catch(()=>{});}
+function renderPlayers(){
+  const box=$('#plist'); if(!$('#players').classList.contains('open')) return;
+  const seen=new Map(); MP.peers.filter(p=>!p.isMe&&p.kind==='viewer').forEach(p=>{const k=peerKey(p);if(!seen.has(k))seen.set(k,p);});
+  box.textContent='';
+  if(!seen.size){const e=document.createElement('p');e.className='empty';
+    e.textContent='Nobody else is playing right now. Share this game with friends; when they’re in their gardens, they’ll appear here.';box.appendChild(e);return;}
+  for(const [k,p] of seen){const pr=p.presence||{},home=typeof pr.home==='string'?pr.home:null,w=typeof pr.world==='string'?pr.world:null;
+    const row=document.createElement('div');row.className='prow';const info=document.createElement('div');
+    const h=document.createElement('h3');h.textContent=nameOf(k);const st=document.createElement('p');
+    st.textContent=!w?'Just arrived':w===home?'Tending their own arboretum':w===MP.myId?'Visiting your arboretum':`Visiting ${nameOf(w)}’s arboretum`;
+    info.append(h,st);row.appendChild(info);
+    if(home&&home!==MP.myId){const b=document.createElement('button');b.className='btn primary';
+      if(visiting&&visiting.owner===home){b.textContent='You’re here';b.disabled=true;}else{b.textContent='Visit';b.onclick=()=>{closePlayers();enterVisit(home);};}
+      row.appendChild(b);}
+    if(w&&w!==home&&w!==currentWorld()){const j=document.createElement('button');j.className='btn';j.textContent='Join them';
+      j.onclick=()=>{closePlayers();if(w===MP.myId)leaveVisit();else enterVisit(w);};row.appendChild(j);}
+    box.appendChild(row);}
+}
+function openPlayers(){$('#players').classList.add('open');$('#players').setAttribute('aria-hidden','false');renderPlayers();}
+function closePlayers(){$('#players').classList.remove('open');$('#players').setAttribute('aria-hidden','true');}
+function clearPeople(){people.forEach(v=>{if(v.sitting)standUp(v);scene.remove(v.p.g);if(v.ripple)scene.remove(v.ripple);});people.length=0;}
+function clearShown(){trees.splice(0).forEach(t=>treeRoot.remove(t.group));decors.splice(0).forEach(d=>decorRoot.remove(d.group));clearPeople();obsDirty=true;ducksDirty=true;}
+function setVisitUi(){
+  $('#visitBar').style.display=visiting?'flex':'none'; $('#shopBtn').style.display=visiting?'none':'';
+  if(visiting) $('#visitTxt').textContent=`Visiting ${nameOf(visiting.owner)}’s arboretum`;
+}
+function enterVisit(owner){
+  if(!MP.db||!owner||owner===MP.myId) return;
+  if(visiting) leaveVisit(true);
+  save(); picked=null; ghostPos=null; updateBanner(); closeShop();
+  const stash={trees:trees.splice(0),decors:decors.splice(0),season:state.season,start:Date.now()};
+  stash.trees.forEach(t=>treeRoot.remove(t.group)); stash.decors.forEach(d=>decorRoot.remove(d.group)); clearPeople();
+  visiting={owner,stash,ver:null,unsub:null,first:true}; obsDirty=true; ducksDirty=true;
+  setVisitUi(); sendPresence(true); syncAvatars(); toast('Walking over…');
+  try{visiting.unsub=MP.db.doc('worlds/'+owner).onSnapshot(snap=>{
+      if(!visiting||visiting.owner!==owner) return;
+      if(!snap.exists){toast('That gardener hasn’t opened their arboretum to visitors yet.');leaveVisit(true);return;}
+      buildVisit(snap.data()||{});},()=>{toast('Couldn’t reach that arboretum.');leaveVisit(true);});
+  }catch(e){leaveVisit(true);}
+}
+function buildVisit(d){
+  if(d.ver===visiting.ver) return; visiting.ver=d.ver; clearShown();
+  const num=(v,lo,hi,def)=>{v=+v;return isFinite(v)?Math.max(lo,Math.min(hi,v)):def;};
+  (Array.isArray(d.trees)?d.trees.slice(0,600):[]).forEach(t=>{if(t&&typeof t.s==='string'&&SP[t.s])addTree(t.s,num(t.x,-34,34,0),num(t.z,-34,34,0),num(t.g,0,1,0.1),Math.floor(num(t.seed,1,1e9,1)));});
+  (Array.isArray(d.decor)?d.decor.slice(0,300):[]).forEach(o=>{if(o&&typeof o.d==='string'&&DC[o.d])addDecor(o.d,num(o.x,-34,34,0),num(o.z,-34,34,0),num(o.r,-100,100,0));});
+  if(visiting.first){visiting.first=false;state.season=num(d.season,0,SEASON_LEN*4-1,state.season);toast(`Welcome to ${nameOf(visiting.owner)}’s arboretum.`);}
+}
+function leaveVisit(silent){
+  if(!visiting) return; const v=visiting; visiting=null; try{v.unsub&&v.unsub();}catch(e){}
+  clearShown();
+  v.stash.trees.forEach(t=>{treeRoot.add(t.group);trees.push(t);}); v.stash.decors.forEach(d=>{decorRoot.add(d.group);decors.push(d);});
+  state.season=(v.stash.season+(Date.now()-v.stash.start)/1000)%(SEASON_LEN*4);
+  obsDirty=true; ducksDirty=true; MP.wasHere=new Set(); setVisitUi(); sendPresence(true); syncAvatars();
+  if(!silent) toast('Back home in your own arboretum.');
+}
+$('#playersBtn').onclick=openPlayers; $('#closePlayers').onclick=closePlayers;
+$('#homeBtn').onclick=()=>leaveVisit(); $('#waveBtn').onclick=sendWave; $('#waveChip').onclick=sendWave;
 
 /* ---------- boot ---------- */
 const AWAY_RATE=0.1; // seasons move at a tenth of normal speed while you're away
@@ -1132,7 +1353,7 @@ const awayAdv=had&&state.savedAt?driftSeasons((Date.now()-state.savedAt)/1000):0
 if(had&&state.started){$('#intro').style.display='none';running=true;
   const extra=awayAdv>=60?` While you were away, the seasons drifted on by ${Math.round(awayAdv/60)} min.`:'';
   toast(`Welcome back. It’s ${SEASONS[Math.floor(state.season/SEASON_LEN)%4].toLowerCase()} in your arboretum.${extra}`,null,6000);}
-$('#begin').onclick=()=>{$('#intro').style.display='none';state.started=true;running=true;save();};
+$('#begin').onclick=()=>{$('#intro').style.display='none';state.started=true;running=true;save();publishWorld(true);};
 let hiddenAt=0;
 addEventListener('pagehide',save);
 document.addEventListener('visibilitychange',()=>{
@@ -1142,6 +1363,7 @@ document.addEventListener('visibilitychange',()=>{
 });
 refreshHud(true);
 requestAnimationFrame(loop);
+initMultiplayer();
 })();
 </script>
 </body>
