@@ -512,7 +512,7 @@ const people=[]; const legGeo=new THREE.CylinderGeometry(0.075,0.055,0.8,7); leg
 const armGeo=new THREE.CylinderGeometry(0.052,0.04,0.6,6); armGeo.translate(0,-0.3,0);
 const HAIR=['#2a1e16','#4a3222','#7a5530','#b89060','#1a1a1a','#8a8a88','#6a2e1a'];
 function makePerson(){
-  const g=new THREE.Group(); const coat=mat(COATS[Math.floor(Math.random()*COATS.length)]);
+  const g=new THREE.Group(); g.rotation.order='YXZ'; const coat=mat(COATS[Math.floor(Math.random()*COATS.length)]);
   const pants=mat(['#3a3530','#4a4a5a','#5a4a3a'][Math.floor(Math.random()*3)]);
   const skin=mat(SKIN[Math.floor(Math.random()*SKIN.length)]), hairM=mat(HAIR[Math.floor(Math.random()*HAIR.length)]), shoeM=mat(['#2a2420','#4a3426','#e8e4dc'][Math.floor(Math.random()*3)]);
   const legs=[-0.1,0.1].map(x=>{const l=new THREE.Mesh(legGeo,pants);l.position.set(x,0.86,0);
@@ -549,7 +549,12 @@ function spawnVisitor(){
   p.g.position.copy(start); scene.add(p.g);
   const path=[new THREE.Vector3((Math.random()-.5)*1.4,0,33)], acts={}, stopIdx=new Set();
   const stops=2+Math.floor(Math.random()*3);
+  let swimAdded=false;
   for(let i=0;i<stops;i++){
+    if(!swimAdded&&Math.random()<0.2){
+      const ponds=[{x:POND.x,z:POND.z,r:POND_R}].concat(decors.filter(d=>d.d.id==='minipond').map(d=>({x:d.x,z:d.z,r:1.5})));
+      const pd=ponds[Math.floor(Math.random()*ponds.length)],a=Math.random()*6.28;
+      path.push(new THREE.Vector3(pd.x+Math.cos(a)*(pd.r+0.4),0,pd.z+Math.sin(a)*(pd.r+0.4)));acts[path.length-1]={type:'swim',pd};swimAdded=true;continue;}
     const usable=decors.filter(d=>d.d.act);
     if(usable.length&&Math.random()<0.55){
       const d=usable[Math.floor(Math.random()*usable.length)];
@@ -591,21 +596,79 @@ function standUp(v){
   const st=a.d.d.seats[a.si],p=localToWorld(a.d,st[0]+Math.sin(st[2])*0.6,st[1]+Math.cos(st[2])*0.6);
   v.p.g.position.set(p.x,0,p.z);
 }
+/* swimming (or skating when the ponds are frozen) */
+const RIPPLE_GEO=new THREE.RingGeometry(0.35,0.45,24);
+function startSwim(v,pd){
+  const skate=curSeason()===3, inner=Math.max(0.6,pd.r-1.0), pts=[];
+  for(let i=0,n=3+Math.floor(Math.random()*3);i<n;i++){const a=Math.random()*6.28,r=Math.sqrt(Math.random())*inner;pts.push(new THREE.Vector3(pd.x+Math.cos(a)*r,0,pd.z+Math.sin(a)*r));}
+  v.swim={pd,pts,j:0,skate,exit:v.p.g.position.clone(),out:false};
+  if(!skate){v.ripple=new THREE.Mesh(RIPPLE_GEO,new THREE.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:0.6,depthWrite:false}));v.ripple.rotation.x=-Math.PI/2;scene.add(v.ripple);v.rt=0;}
+  floatText(skate?'⛸️':'💦',v.p.g.position.clone().setY(2));
+}
+function updateSwim(v,dt){
+  const s=v.swim,g=v.p.g; v.phase+=dt*(s.skate?3:5);
+  const target=s.out?s.exit:s.pts[s.j];
+  const inWater=Math.hypot(g.position.x-s.pd.x,g.position.z-s.pd.z)<s.pd.r-0.15;
+  const done=walkTo(g,target,s.skate?1.7:0.75,dt);
+  if(s.skate){g.rotation.x=0;g.position.y=0.04;v.p.arms[0].rotation.z=1.2;v.p.arms[1].rotation.z=-1.2;v.p.arms.forEach(a=>a.rotation.x=0);
+    const sw=Math.sin(v.phase)*0.35;v.p.legs[0].rotation.x=sw;v.p.legs[1].rotation.x=-sw;g.rotation.z=Math.sin(v.phase)*0.08;}
+  else{const prone=inWater?1.3:0;g.rotation.x+=(prone-g.rotation.x)*Math.min(1,dt*4);g.position.y=-0.35*(g.rotation.x/1.3);
+    v.p.arms[0].rotation.x=-v.phase;v.p.arms[1].rotation.x=-v.phase-Math.PI;
+    v.p.legs[0].rotation.x=Math.sin(v.phase*2)*0.3;v.p.legs[1].rotation.x=-Math.sin(v.phase*2)*0.3;
+    v.rt+=dt;const f=(v.rt%1.4)/1.4;v.ripple.position.set(g.position.x+Math.sin(g.rotation.y)*1.1,0.06,g.position.z+Math.cos(g.rotation.y)*1.1);
+    v.ripple.scale.setScalar(1+f*3);v.ripple.material.opacity=inWater?0.55*(1-f):0;}
+  if(done){if(!s.out){s.j++;if(s.j>=s.pts.length)s.out=true;}else endSwim(v);}
+}
+function endSwim(v){const g=v.p.g;g.rotation.x=0;g.rotation.z=0;g.position.y=0;v.p.arms.forEach(a=>{a.rotation.x=0;a.rotation.z=0;});
+  if(v.ripple){scene.remove(v.ripple);v.ripple.material.dispose();v.ripple=null;}v.swim=null;}
+
+/* visitors chatting and waving to each other */
+let socialClock=0;
+const canChat=(v,now)=>!v.swim&&!v.sitting&&v.pause<=0&&!v.chat&&v.i>0&&v.i<v.path.length-2&&(v.nextSocial||0)<now;
+function startChat(a,b,now){
+  const dur=4+Math.random()*4;
+  [a,b].forEach((v,k)=>{const o=k?a:b,g=v.p.g;v.chat={k,next:now+600+Math.random()*900};v.pause=dur;
+    g.rotation.y=Math.atan2(o.p.g.position.x-g.position.x,o.p.g.position.z-g.position.z);v.nextSocial=now+dur*1000+15000;
+    v.p.legs.forEach(l=>l.rotation.x=0);});
+  floatText(['👋','😊','🙂'][Math.floor(Math.random()*3)],a.p.g.position.clone().setY(2.3));
+}
+function updateSocial(dt){
+  socialClock+=dt; if(socialClock<0.3) return; socialClock=0; const now=performance.now();
+  for(let i=0;i<people.length;i++){const a=people[i]; if(!canChat(a,now))continue;
+    for(let j=i+1;j<people.length;j++){const b=people[j]; if(!canChat(b,now))continue;
+      if(a.p.g.position.distanceTo(b.p.g.position)>1.8)continue;
+      if(Math.random()<0.45) startChat(a,b,now);
+      else{a.wave=b.wave=now+1300;a.nextSocial=b.nextSocial=now+8000;floatText('👋',a.p.g.position.clone().setY(2.3));}
+      break;}}
+}
 function updatePeople(dt){
   const now=performance.now();
   for(let k=people.length-1;k>=0;k--){
     const v=people[k], g=v.p.g;
+    if(v.swim){updateSwim(v,dt);continue;}
     if(v.pause>0){v.pause-=dt;
       if(!v.sitting){v.p.legs.forEach(l=>l.rotation.x*=0.85);v.p.arms.forEach(m=>m.rotation.x*=0.85);}
-      v.p.head.rotation.y=Math.sin(now/900+k)*(v.looking?0.25:0.5);
-      v.p.head.rotation.x=(v.looking?0.4:-0.12)+Math.sin(now/1400+k)*0.1;
-      if(v.pause<=0){if(v.sitting)standUp(v);v.looking=false;}
+      if(v.chat){const talk=(Math.floor(now/1400)+v.chat.k)%2===0;v.p.head.rotation.y*=0.8;
+        v.p.head.rotation.x=talk?Math.sin(now/180)*0.08:Math.sin(now/420)*0.15;
+        if(talk) v.p.arms[1].rotation.x=-0.6-0.35*Math.sin(now/260);
+        if(talk&&now>v.chat.next){v.chat.next=now+2200+Math.random()*2000;floatText(['💬','😄','🌳','🐈','👍'][Math.floor(Math.random()*5)],g.position.clone().setY(2.3));}}
+      else if(v.sitting){const mate=v.sitting.d.occ.find(o=>o&&o!==v);
+        if(mate){const mg=mate.p.g.position;const want=Math.atan2(mg.x-g.position.x,mg.z-g.position.z)-g.rotation.y;const w=Math.atan2(Math.sin(want),Math.cos(want));
+          v.p.head.rotation.y=Math.max(-1,Math.min(1,w))*(0.5+0.5*Math.sin(now/2000+k));v.p.head.rotation.x=Math.sin(now/300+k)*0.05;
+          if(Math.random()<dt*0.15)floatText(['💬','😄','🙂'][Math.floor(Math.random()*3)],g.position.clone().setY(1.9));}
+        else{v.p.head.rotation.y=Math.sin(now/900+k)*0.5;v.p.head.rotation.x=-0.12+Math.sin(now/1400+k)*0.1;}}
+      else{v.p.head.rotation.y=Math.sin(now/900+k)*(v.looking?0.25:0.5);
+        v.p.head.rotation.x=(v.looking?0.4:-0.12)+Math.sin(now/1400+k)*0.1;}
+      if(v.pause<=0){if(v.sitting)standUp(v);v.looking=false;v.chat=null;}
       continue;}
     v.phase+=dt*v.speed*6; const sw=Math.sin(v.phase)*0.5; v.p.legs[0].rotation.x=sw; v.p.legs[1].rotation.x=-sw;
     v.p.arms[0].rotation.x=-sw*0.75; v.p.arms[1].rotation.x=sw*0.75; v.p.head.rotation.x*=0.9;
+    if(v.wave&&v.wave>now){v.p.arms[1].rotation.x=-2.7;v.p.arms[1].rotation.z=-0.3-0.35*Math.sin(now/90);}
+    else if(v.wave){v.wave=0;v.p.arms[1].rotation.z=-0.06;}
     if(walkTo(g,v.path[v.i],v.speed,dt)){
       const a=v.acts[v.i];
       if(a&&a.type==='sit') sitDown(v,a);
+      else if(a&&a.type==='swim') startSwim(v,a.pd);
       else if(a&&a.type==='look'){v.looking=true;v.pause=3+Math.random()*4;g.rotation.y=Math.atan2(a.d.x-g.position.x,a.d.z-g.position.z);}
       else if(v.stops.has(v.i)) v.pause=2.5+Math.random()*5;
       v.i++;
@@ -967,7 +1030,7 @@ $('#shopBtn').onclick=openShop; $('#closeShop').onclick=closeShop;
 function resetGame(){
   trees.slice().forEach(t=>treeRoot.remove(t.group)); trees.length=0;
   decors.slice().forEach(d=>decorRoot.remove(d.group)); decors.length=0;
-  people.forEach(v=>scene.remove(v.p.g)); people.length=0; if(cat){scene.remove(cat.c.g);cat=null;}
+  people.forEach(v=>{scene.remove(v.p.g);if(v.ripple)scene.remove(v.ripple);}); people.length=0; if(cat){scene.remove(cat.c.g);cat=null;}
   state=fresh(); state.started=true; picked=null; updateBanner(); save(); closeShop(); refreshHud(true); toast('A fresh meadow and $100 to spend.');
 }
 
@@ -1047,7 +1110,7 @@ function loop(now){
     if(trees.length){visitorClock+=dt; const iv=Math.max(3,Math.min(40,35/(1+beauty()*0.3)));
       if(visitorClock>=iv){visitorClock=0; if(people.length<22) spawnVisitor(); else {state.money+=TICKET;state.earned+=TICKET;state.visitorsTotal++;floatText('+$'+TICKET,new THREE.Vector3(0,3.6,35));}}}
     if(state.play>=state.nextCat){state.nextCat+=CAT_EVERY; if(!cat) spawnCat();}
-    updateTrees(dt,t); updatePeople(dt); updateCat(dt);
+    updateTrees(dt,t); updatePeople(dt); updateSocial(dt); updateCat(dt);
     saveClock+=dt; if(saveClock>5){saveClock=0;save();}
   }
   const ph=state.season/SEASON_LEN; applySeason(ph,t); updateParticles(dt,t,ph);
