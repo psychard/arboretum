@@ -1,0 +1,26 @@
+name: CI
+
+# Checks a pull request before it is merged. pages.yml owns push-to-main and
+# does the deploying; this one never deploys, so the two never overlap. It
+# exists so a Dependabot PR bumping the action pins arrives with a check on it.
+on:
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+# Read the code and nothing else; this job has no business deploying.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      # Pinned to a SHA with the release in the comment, as in pages.yml.
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - run: node tools/check.mjs

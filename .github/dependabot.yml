@@ -1,0 +1,20 @@
+version: 2
+
+# The actions in the workflows are pinned to commit SHAs. Dependabot reads the
+# `# vX.Y.Z` comment beside each pin and moves the hash and the comment
+# together, which is the convention pages.yml relies on staying true.
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    # One PR for all of them: the Pages actions have compatibility rules
+    # between them, so they are reviewed together.
+    groups:
+      actions:
+        patterns:
+          - "*"
+    labels:
+      - dependencies
+
+# No npm entry: there is no package.json. three.js is vendored on purpose.
