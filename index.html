@@ -433,6 +433,13 @@ function cyc(ph){const p=ph-0.5,fl=Math.floor(p);const i=((fl%4)+4)%4;return [i,
 function lerpNum(arr,ph){const [a,b,f]=cyc(ph);return arr[a]+(arr[b]-arr[a])*f;}
 function lerpCol(arr,ph,out){const [a,b,f]=cyc(ph);return out.copy(arr[a]).lerp(arr[b],f);}
 const shadowAll=o=>o.traverse(m=>{if(m.isMesh){m.castShadow=true;m.receiveShadow=true;}});
+/* Visitors, ducks and the cat come and go all day, so their parts share cached geometry and
+   materials; three.js never frees GPU memory by itself, and a fresh set per body piled up. */
+const GEO={}, PMAT={};
+function G(type,...a){const k=type+a;return GEO[k]||(GEO[k]=new THREE[type](...a));}
+function pmat(c){return PMAT[c]||(PMAT[c]=mat(c));}
+/* Trees and decorations own their geometry (the shared BLOBS aside): free it when they go. */
+function freeGeo(o){o.traverse(m=>{if(m.geometry&&!BLOBS.includes(m.geometry))m.geometry.dispose();});}
 
 /* per-species materials */
 SPECIES.forEach(s=>{
@@ -593,26 +600,26 @@ const people=[]; const legGeo=new THREE.CylinderGeometry(0.075,0.055,0.8,7); leg
 const armGeo=new THREE.CylinderGeometry(0.052,0.04,0.6,6); armGeo.translate(0,-0.3,0);
 const HAIR=['#6a4426','#5a3a22','#7a5530','#b89060','#9a4a26','#d8c8a8','#8a3a1a'];
 function makePerson(){
-  const g=new THREE.Group(); g.rotation.order='YXZ'; const coat=mat(COATS[Math.floor(Math.random()*COATS.length)]);
-  const pants=mat(['#6a5a8a','#4a6a8a','#8a6a4a'][Math.floor(Math.random()*3)]);
-  const skin=mat(SKIN[Math.floor(Math.random()*SKIN.length)]), hairM=mat(HAIR[Math.floor(Math.random()*HAIR.length)]), shoeM=mat(['#8a5a3a','#6a4a2e','#e8e4dc'][Math.floor(Math.random()*3)]);
+  const g=new THREE.Group(); g.rotation.order='YXZ'; const coat=pmat(COATS[Math.floor(Math.random()*COATS.length)]);
+  const pants=pmat(['#6a5a8a','#4a6a8a','#8a6a4a'][Math.floor(Math.random()*3)]);
+  const skin=pmat(SKIN[Math.floor(Math.random()*SKIN.length)]), hairM=pmat(HAIR[Math.floor(Math.random()*HAIR.length)]), shoeM=pmat(['#8a5a3a','#6a4a2e','#e8e4dc'][Math.floor(Math.random()*3)]);
   const legs=[-0.1,0.1].map(x=>{const l=new THREE.Mesh(legGeo,pants);l.position.set(x,0.86,0);
-    const shoe=new THREE.Mesh(new THREE.BoxGeometry(0.11,0.08,0.24),shoeM);shoe.position.set(0,-0.8,0.05);l.add(shoe);g.add(l);return l;});
-  const hips=new THREE.Mesh(new THREE.CylinderGeometry(0.19,0.2,0.2,10),pants); hips.position.y=0.9; hips.scale.z=0.75; g.add(hips);
-  const torso=new THREE.Mesh(new THREE.CylinderGeometry(0.21,0.19,0.58,10),coat); torso.position.y=1.28; torso.scale.z=0.68; g.add(torso);
-  const shoulders=new THREE.Mesh(new THREE.SphereGeometry(0.2,10,6),coat); shoulders.position.y=1.52; shoulders.scale.set(1.3,0.45,0.75); g.add(shoulders);
-  const neck=new THREE.Mesh(new THREE.CylinderGeometry(0.055,0.065,0.12,6),skin); neck.position.y=1.6; g.add(neck);
+    const shoe=new THREE.Mesh(G('BoxGeometry',0.11,0.08,0.24),shoeM);shoe.position.set(0,-0.8,0.05);l.add(shoe);g.add(l);return l;});
+  const hips=new THREE.Mesh(G('CylinderGeometry',0.19,0.2,0.2,10),pants); hips.position.y=0.9; hips.scale.z=0.75; g.add(hips);
+  const torso=new THREE.Mesh(G('CylinderGeometry',0.21,0.19,0.58,10),coat); torso.position.y=1.28; torso.scale.z=0.68; g.add(torso);
+  const shoulders=new THREE.Mesh(G('SphereGeometry',0.2,10,6),coat); shoulders.position.y=1.52; shoulders.scale.set(1.3,0.45,0.75); g.add(shoulders);
+  const neck=new THREE.Mesh(G('CylinderGeometry',0.055,0.065,0.12,6),skin); neck.position.y=1.6; g.add(neck);
   const arms=[-0.27,0.27].map(x=>{const a=new THREE.Mesh(armGeo,coat);a.position.set(x,1.5,0);a.rotation.z=x>0?-0.06:0.06;
-    const hand=new THREE.Mesh(new THREE.SphereGeometry(0.048,6,5),skin);hand.position.y=-0.63;a.add(hand);g.add(a);return a;});
+    const hand=new THREE.Mesh(G('SphereGeometry',0.048,6,5),skin);hand.position.y=-0.63;a.add(hand);g.add(a);return a;});
   const head=new THREE.Group(); head.position.y=1.76; g.add(head);
-  const skull=new THREE.Mesh(new THREE.SphereGeometry(0.13,12,9),skin); skull.scale.set(0.95,1.15,1.02); head.add(skull);
-  const nose=new THREE.Mesh(new THREE.ConeGeometry(0.022,0.06,4),skin); nose.rotation.x=Math.PI/2; nose.position.set(0,-0.01,0.135); head.add(nose);
-  [-0.13,0.13].forEach(x=>{const e=new THREE.Mesh(new THREE.SphereGeometry(0.025,5,4),skin);e.position.set(x,0,0);head.add(e);});
-  const hair=new THREE.Mesh(new THREE.SphereGeometry(0.14,12,8,0,Math.PI*2,0,Math.PI*0.55),hairM); hair.position.set(0,0.025,-0.012); hair.scale.set(1,1.12,1.05); hair.rotation.x=-0.25; head.add(hair);
-  if(Math.random()<0.35){const long=new THREE.Mesh(new THREE.SphereGeometry(0.13,10,8),hairM);long.scale.set(1,1.5,0.6);long.position.set(0,-0.1,-0.07);head.add(long);}
-  if(Math.random()<0.35){const hm=mat(['#8a5a3a','#e3d6b4','#9a3a3a','#4f6a8a'][Math.floor(Math.random()*4)]);
-    const brim=new THREE.Mesh(new THREE.CylinderGeometry(0.24,0.24,0.02,14),hm);brim.position.y=0.1;head.add(brim);
-    const crown=new THREE.Mesh(new THREE.CylinderGeometry(0.12,0.14,0.13,12),hm);crown.position.y=0.17;head.add(crown);}
+  const skull=new THREE.Mesh(G('SphereGeometry',0.13,12,9),skin); skull.scale.set(0.95,1.15,1.02); head.add(skull);
+  const nose=new THREE.Mesh(G('ConeGeometry',0.022,0.06,4),skin); nose.rotation.x=Math.PI/2; nose.position.set(0,-0.01,0.135); head.add(nose);
+  [-0.13,0.13].forEach(x=>{const e=new THREE.Mesh(G('SphereGeometry',0.025,5,4),skin);e.position.set(x,0,0);head.add(e);});
+  const hair=new THREE.Mesh(G('SphereGeometry',0.14,12,8,0,Math.PI*2,0,Math.PI*0.55),hairM); hair.position.set(0,0.025,-0.012); hair.scale.set(1,1.12,1.05); hair.rotation.x=-0.25; head.add(hair);
+  if(Math.random()<0.35){const long=new THREE.Mesh(G('SphereGeometry',0.13,10,8),hairM);long.scale.set(1,1.5,0.6);long.position.set(0,-0.1,-0.07);head.add(long);}
+  if(Math.random()<0.35){const hm=pmat(['#8a5a3a','#e3d6b4','#9a3a3a','#4f6a8a'][Math.floor(Math.random()*4)]);
+    const brim=new THREE.Mesh(G('CylinderGeometry',0.24,0.24,0.02,14),hm);brim.position.y=0.1;head.add(brim);
+    const crown=new THREE.Mesh(G('CylinderGeometry',0.12,0.14,0.13,12),hm);crown.position.y=0.17;head.add(crown);}
   shadowAll(g); g.scale.setScalar(0.93+Math.random()*0.15);
   return {g,legs,arms,head};
 }
@@ -769,15 +776,15 @@ function updatePeople(dt){
 /* ---------- the cat ---------- */
 let cat=null;
 function makeCat(){
-  const g=new THREE.Group(); const fur=mat('#a8a8ae'), dark=mat('#93939a');
-  const body=new THREE.Mesh(new THREE.SphereGeometry(0.28,10,8),fur); body.scale.set(1,0.85,1.7); body.position.y=0.4; g.add(body);
+  const g=new THREE.Group(); const fur=pmat('#a8a8ae'), dark=pmat('#93939a');
+  const body=new THREE.Mesh(G('SphereGeometry',0.28,10,8),fur); body.scale.set(1,0.85,1.7); body.position.y=0.4; g.add(body);
   const head=new THREE.Group(); head.position.set(0,0.62,0.44); g.add(head);
-  head.add(new THREE.Mesh(new THREE.SphereGeometry(0.2,10,8),fur));
-  [-0.1,0.1].forEach(x=>{const e=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.15,4),dark);e.position.set(x,0.18,0);head.add(e);
-    const eye=new THREE.Mesh(new THREE.SphereGeometry(0.03,6,4),new THREE.MeshBasicMaterial({color:'#c9d65a'}));eye.position.set(x*0.7,0.04,0.18);head.add(eye);});
+  head.add(new THREE.Mesh(G('SphereGeometry',0.2,10,8),fur));
+  [-0.1,0.1].forEach(x=>{const e=new THREE.Mesh(G('ConeGeometry',0.07,0.15,4),dark);e.position.set(x,0.18,0);head.add(e);
+    const eye=new THREE.Mesh(G('SphereGeometry',0.03,6,4),PMAT.catEye||(PMAT.catEye=new THREE.MeshBasicMaterial({color:'#c9d65a'})));eye.position.set(x*0.7,0.04,0.18);head.add(eye);});
   const tail=new THREE.Object3D(); tail.position.set(0,0.5,-0.42); g.add(tail);
-  const tg=new THREE.CylinderGeometry(0.03,0.045,0.6,5); tg.translate(0,0.3,0); const tm=new THREE.Mesh(tg,dark); tm.rotation.x=-0.7; tail.add(tm);
-  const lg=new THREE.CylinderGeometry(0.045,0.04,0.3,5); lg.translate(0,-0.15,0);
+  const tg=GEO.catTail||(GEO.catTail=new THREE.CylinderGeometry(0.03,0.045,0.6,5).translate(0,0.3,0)); const tm=new THREE.Mesh(tg,dark); tm.rotation.x=-0.7; tail.add(tm);
+  const lg=GEO.catLeg||(GEO.catLeg=new THREE.CylinderGeometry(0.045,0.04,0.3,5).translate(0,-0.15,0));
   const legs=[[-0.12,0.3],[0.12,0.3],[-0.12,-0.3],[0.12,-0.3]].map(([x,z])=>{const l=new THREE.Mesh(lg,fur);l.position.set(x,0.3,z);g.add(l);return l;});
   shadowAll(g); g.scale.setScalar(1.35);
   return {g,body,head,tail,legs};
@@ -929,16 +936,16 @@ function inWater(x,z,m){for(const c of waterObstacles()) if(Math.hypot(x-c.x,z-c
 function duckPonds(){return [{x:POND.x,z:POND.z,r:POND_R}].concat(decors.filter(d=>d.d.id==='minipond').map(d=>({x:d.x,z:d.z,r:1.5})));}
 function makeDuck(){
   const g=new THREE.Group(), male=Math.random()<0.5;
-  const bodyM=mat(male?'#d2cab6':'#a8825a'), headM=mat(male?'#3f8a52':'#94704a'), wingM=mat(male?'#b9b098':'#8e6a44'), chestM=mat(male?'#94603c':'#a8825a');
-  const body=new THREE.Mesh(new THREE.SphereGeometry(0.22,10,8),bodyM); body.scale.set(0.85,0.6,1.3); body.position.y=0.08; g.add(body);
-  const chest=new THREE.Mesh(new THREE.SphereGeometry(0.15,8,6),chestM); chest.position.set(0,0.1,0.17); g.add(chest);
-  [-1,1].forEach(sd=>{const w=new THREE.Mesh(new THREE.SphereGeometry(0.15,8,6),wingM);w.scale.set(0.35,0.5,1.1);w.position.set(sd*0.15,0.12,-0.03);g.add(w);});
-  const tail=new THREE.Mesh(new THREE.ConeGeometry(0.07,0.16,5),bodyM); tail.rotation.x=-1.9; tail.position.set(0,0.16,-0.3); g.add(tail);
-  const neck=new THREE.Mesh(new THREE.CylinderGeometry(0.05,0.07,0.16,6),male?headM:bodyM); neck.position.set(0,0.2,0.2); g.add(neck);
+  const bodyM=pmat(male?'#d2cab6':'#a8825a'), headM=pmat(male?'#3f8a52':'#94704a'), wingM=pmat(male?'#b9b098':'#8e6a44'), chestM=pmat(male?'#94603c':'#a8825a');
+  const body=new THREE.Mesh(G('SphereGeometry',0.22,10,8),bodyM); body.scale.set(0.85,0.6,1.3); body.position.y=0.08; g.add(body);
+  const chest=new THREE.Mesh(G('SphereGeometry',0.15,8,6),chestM); chest.position.set(0,0.1,0.17); g.add(chest);
+  [-1,1].forEach(sd=>{const w=new THREE.Mesh(G('SphereGeometry',0.15,8,6),wingM);w.scale.set(0.35,0.5,1.1);w.position.set(sd*0.15,0.12,-0.03);g.add(w);});
+  const tail=new THREE.Mesh(G('ConeGeometry',0.07,0.16,5),bodyM); tail.rotation.x=-1.9; tail.position.set(0,0.16,-0.3); g.add(tail);
+  const neck=new THREE.Mesh(G('CylinderGeometry',0.05,0.07,0.16,6),male?headM:bodyM); neck.position.set(0,0.2,0.2); g.add(neck);
   const head=new THREE.Group(); head.position.set(0,0.3,0.22); g.add(head);
-  head.add(new THREE.Mesh(new THREE.SphereGeometry(0.1,10,8),headM));
-  if(male){const collar=new THREE.Mesh(new THREE.TorusGeometry(0.075,0.015,5,12),mat('#f4f0e4'));collar.rotation.x=Math.PI/2;collar.position.y=-0.08;head.add(collar);}
-  const bill=new THREE.Mesh(new THREE.BoxGeometry(0.07,0.03,0.12),mat('#e8a23a')); bill.position.set(0,-0.02,0.12); head.add(bill);
+  head.add(new THREE.Mesh(G('SphereGeometry',0.1,10,8),headM));
+  if(male){const collar=new THREE.Mesh(G('TorusGeometry',0.075,0.015,5,12),pmat('#f4f0e4'));collar.rotation.x=Math.PI/2;collar.position.y=-0.08;head.add(collar);}
+  const bill=new THREE.Mesh(G('BoxGeometry',0.07,0.03,0.12),pmat('#e8a23a')); bill.position.set(0,-0.02,0.12); head.add(bill);
   shadowAll(g); g.scale.setScalar(1.25);
   return {g,head};
 }
@@ -1006,7 +1013,7 @@ function onTap(cx,cy){
     else if(o&&o.userData.decor){toast(`${o.userData.decor.d.name}. Visitors love it.`);}}
 }
 function setGhost(){
-  if(ghostDecor){ghost.remove(ghostDecor);ghostDecor=null;}
+  if(ghostDecor){ghost.remove(ghostDecor);freeGeo(ghostDecor);ghostDecor=null;}
   ghostCone.visible=!isDecor(picked);
   if(isDecor(picked)){ghostDecor=makeDecor(picked.id);ghostDecor.traverse(m=>{if(m.isMesh){m.material=ghostDecorMat;m.castShadow=false;m.receiveShadow=false;}});ghost.add(ghostDecor);}
 }
@@ -1179,8 +1186,8 @@ $('#shopBtn').onclick=openShop; $('#closeShop').onclick=closeShop;
 function resetGame(){
   if(visiting) leaveVisit(true);
   obsDirty=true; ducksDirty=true;
-  trees.slice().forEach(t=>treeRoot.remove(t.group)); trees.length=0;
-  decors.slice().forEach(d=>decorRoot.remove(d.group)); decors.length=0;
+  trees.slice().forEach(t=>{treeRoot.remove(t.group);freeGeo(t.group);}); trees.length=0;
+  decors.slice().forEach(d=>{decorRoot.remove(d.group);freeGeo(d.group);}); decors.length=0;
   clearPeople(); if(cat){scene.remove(cat.c.g);cat=null;}
   state=fresh(); state.started=true; picked=null; updateBanner(); save(); closeShop(); refreshHud(true); toast('A fresh meadow and $100 to spend.');
 }
@@ -1369,7 +1376,7 @@ function renderPlayers(){
 function openPlayers(){$('#players').classList.add('open');$('#players').setAttribute('aria-hidden','false');renderPlayers();}
 function closePlayers(){$('#players').classList.remove('open');$('#players').setAttribute('aria-hidden','true');}
 function clearPeople(){people.forEach(v=>{if(v.sitting)standUp(v);scene.remove(v.p.g);if(v.ripple)scene.remove(v.ripple);});people.length=0;}
-function clearShown(){trees.splice(0).forEach(t=>treeRoot.remove(t.group));decors.splice(0).forEach(d=>decorRoot.remove(d.group));clearPeople();obsDirty=true;ducksDirty=true;}
+function clearShown(){trees.splice(0).forEach(t=>{treeRoot.remove(t.group);freeGeo(t.group);});decors.splice(0).forEach(d=>{decorRoot.remove(d.group);freeGeo(d.group);});clearPeople();obsDirty=true;ducksDirty=true;}
 function setVisitUi(){
   $('#visitBar').style.display=visiting?'flex':'none'; $('#shopBtn').style.display=visiting?'none':'';
   if(visiting) $('#visitTxt').textContent=`Visiting ${nameOf(visiting.owner)}’s arboretum`;
