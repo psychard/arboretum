@@ -1,11 +1,11 @@
 import { SEASON_LEN } from './data';
-import { BAK_KEY, SAVE_KEY, fresh, migrate, sortKnown } from './saveformat';
+import { BAK_KEY, SAVE_KEY, type SaveState, fresh, readSave } from './saveformat';
 import { trees } from './trees';
 import { decors } from './decor';
 import { toast } from './ui';
 import { publishWorld, visiting } from './mp';
 
-export let state = fresh();
+export let state: SaveState = fresh();
 
 export function curSeason() {
   return Math.floor(state.season / SEASON_LEN) % 4;
@@ -25,13 +25,11 @@ export function load() {
   } catch (e) {
     console.warn('Arboretum: can’t back up the save', e);
   }
-  let s = null;
+  let s: SaveState | null = null;
   try {
-    s = JSON.parse(raw);
-    s = s && typeof s.money === 'number' ? sortKnown(migrate(s)) : null;
+    s = readSave(JSON.parse(raw));
   } catch (e) {
     console.warn(e);
-    s = null;
   }
   if (!s) {
     // a fresh game will save over this, and the next page load over BAK_KEY: keep it somewhere neither touches
@@ -41,7 +39,7 @@ export function load() {
     console.warn('Arboretum: the save is unreadable; a copy is under ' + SAVE_KEY + '.unreadable');
     return false;
   }
-  state = Object.assign(fresh(), s);
+  state = s;
   return true;
 }
 export let saveWarned = false;

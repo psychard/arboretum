@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
 import { AVAIL, DC, DECOR, SP, SPECIES } from '../src/data';
-import { RENAMED, SAVE_V, fresh, migrate, sortKnown } from '../src/saveformat';
+import { RENAMED, SAVE_V, readSave } from '../src/saveformat';
 
-// load() runs exactly this: migrate, sort into known and orphans, then lay it over fresh().
-const loadFrom = (s: any) => Object.assign(fresh(), sortKnown(migrate(structuredClone(s))));
+// what load() makes of a save (readSave changes its argument, so give it a copy)
+const loadFrom = (s: any) => readSave(structuredClone(s))!;
 const fixture = (name: string) => JSON.parse(readFileSync(new URL(`saves/${name}`, import.meta.url), 'utf8'));
 
 // One fixture per save version that has ever shipped. When SAVE_V goes up, keep
@@ -72,6 +72,10 @@ describe('unknown ids', () => {
     } finally {
       delete (RENAMED as any).oldoak;
     }
+  });
+
+  it('refuses something that is not a save', () => {
+    for (const junk of [null, 3, 'x', [], {}, { money: '5' }]) expect(readSave(junk)).toBeNull();
   });
 
   it('ignores junk entries instead of throwing', () => {

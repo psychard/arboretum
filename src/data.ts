@@ -488,7 +488,7 @@ SPECIES.forEach(s => (s.seasons = AVAIL[s.id] || [0, 1, 2, 3]));
 
 export function nextAvail(sp: Species, si: number): number {
   for (let k = 1; k < 4; k++) {
-    if (sp.seasons.includes((si + k) % 4)) return (si + k) % 4;
+    if (sp.seasons?.includes((si + k) % 4)) return (si + k) % 4;
   }
   return si;
 }
