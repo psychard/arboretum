@@ -2,3 +2,5 @@
 *.log
 .claude/worktrees/
 .claude/settings.local.json
+node_modules/
+dist/

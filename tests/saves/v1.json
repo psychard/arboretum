@@ -1,0 +1,20 @@
+{
+  "money": 412.5,
+  "trees": [
+    { "s": "oak", "x": 8.2, "z": -6.1, "g": 0.6123, "seed": 123456789 },
+    { "s": "cherry", "x": -9.4, "z": 12.7, "g": 1, "seed": 987654321 },
+    { "s": "sequoia", "x": 14, "z": 18.5, "g": 0.05, "seed": 42 }
+  ],
+  "play": 5421.7,
+  "season": 9001.3,
+  "visitorsTotal": 311,
+  "earned": 7775,
+  "cats": 18,
+  "nextCat": 5700,
+  "started": true,
+  "decor": [
+    { "d": "bench", "x": 4.5, "z": 9, "r": 0.785 },
+    { "d": "gazebo", "x": -16, "z": -20, "r": 0 }
+  ],
+  "savedAt": 1789000000000
+}

@@ -10,36 +10,50 @@ Play it at **[arboretum.psychard.com](https://arboretum.psychard.com/)**.
 
 ## What's here
 
-The whole game is [`index.html`](index.html): markup, styles and one inline
-script. No build step and no dependencies to install.
+TypeScript, bundled by [Vite](https://vite.dev/). The game is plain three.js
+(r128, from npm) and DOM, with no framework.
 
-- `vendor/` — three.js r128 (MIT) and the Architects Daughter typeface (SIL Open
-  Font License), served from here rather than cdnjs and Google Fonts so the game
-  works offline and makes no third-party requests.
-- `icons/`, `manifest.json` — so Share → **Add to Home Screen** installs it as
-  *Arboretum*, full screen.
-- `tools/check.mjs` — parses the inline script without running it. CI and the
-  deploy both gate on it.
-
-Progress saves to `localStorage`, so it belongs to the browser and the origin.
+- `index.html`: the page markup (HUD, shop, intro card).
+- `src/main.ts`: checks for WebGL, then loads `src/game.ts`, which holds the
+  loop and boot. Each other module in `src/` is one part of the game:
+  `world` (the meadow, pond, hedge and season palettes), `trees`, `decor`,
+  `people` (visitors), `animals` (the cat and the ducks), `water` (pond
+  obstacles and walking), `camera` (joystick, drag, pinch), `shop`
+  (buying and placing), `thumbs` (the shop's rotating 3D trees), `hud`, `ui`
+  (toasts), `render` (renderer and the painterly post shader) and `mp`
+  (visiting other gardens; see History).
+- `src/data.ts`: every species and decoration, their prices and seasons.
+- `src/saveformat.ts` and `src/save.ts`: the save. See **Saves** below.
+- `tests/`: the save-format tests and one fixture save per save version.
+- `public/`: icons, `manifest.json` (so Share → **Add to Home Screen** installs
+  it as *Arboretum*, full screen) and the Architects Daughter typeface (SIL Open
+  Font License), served from here so the game makes no third-party requests.
 
 ## Running it
 
-Any static server from the repo root:
-
 ```bash
-python3 -m http.server 8000
+npm install
+npm run dev
 ```
 
-Then open http://localhost:8000. Opening `index.html` straight from disk mostly
-works too, but the manifest and absolute `/icons/` paths want a server.
+Then open http://localhost:5173. `npm test` runs the tests, and `npm run build`
+typechecks and writes the site to `dist/` (`npm run preview` serves that).
+
+## Saves
+
+Progress saves to `localStorage` under `painted-arboretum-v1`, so it belongs to
+the browser and the origin. That key never changes. To change the save's
+shape, bump `SAVE_V`, add a step to `migrate()` and add a fixture to
+`tests/saves/`. To rename a species or decoration id, add it to `RENAMED`.
+A save entry this version can't build is kept in `orphans`, never dropped.
 
 ## Deploys
 
-Push to `main` and [`pages.yml`](.github/workflows/pages.yml) runs the check
-and publishes the repo root to GitHub Pages, served at the custom domain
-`arboretum.psychard.com` (set in the repo's Pages settings; DNS is a CNAME to
-`psychard.github.io`). Pull requests get the same check from `ci.yml`.
+Push to `main` and [`pages.yml`](.github/workflows/pages.yml) runs the tests
+and the build, then publishes `dist/` to GitHub Pages, served at the custom
+domain `arboretum.psychard.com` (set in the repo's Pages settings; DNS is a
+CNAME to `psychard.github.io`). Pull requests get the same tests and build
+from `ci.yml`.
 
 ## History
 
@@ -50,4 +64,5 @@ runtime (`window.claude`), which this host doesn't have, so that code is
 guarded and stays dormant here. It was then hosted for a day at
 www.psychard.com/arboretum/, in
 [psychard.github.io](https://github.com/psychard/psychard.github.io), before
-moving to its own repo and subdomain.
+moving to its own repo and subdomain, where it was split from one `index.html`
+into the modules above.

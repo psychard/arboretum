@@ -17,4 +17,19 @@ updates:
     labels:
       - dependencies
 
-# No npm entry: there is no package.json. three.js is vendored on purpose.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      # The build and test tools move together; they rarely break the game.
+      tooling:
+        patterns: ["vite", "vitest", "typescript", "prettier"]
+    ignore:
+      # three.js stays on r128 until someone upgrades it on purpose: newer
+      # releases change colour management and light intensities, which shifts
+      # the painted look. @types/three has to match it.
+      - dependency-name: "three"
+      - dependency-name: "@types/three"
+    labels:
+      - dependencies

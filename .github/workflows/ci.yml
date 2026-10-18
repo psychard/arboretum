@@ -2,7 +2,8 @@ name: CI
 
 # Checks a pull request before it is merged. pages.yml owns push-to-main and
 # does the deploying; this one never deploys, so the two never overlap. It
-# exists so a Dependabot PR bumping the action pins arrives with a check on it.
+# exists so a Dependabot PR (action pins or npm packages) arrives with the same
+# tests and build the deploy runs.
 on:
   pull_request:
     branches: [main]
@@ -23,4 +24,11 @@ jobs:
       # Pinned to a SHA with the release in the comment, as in pages.yml.
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      - run: node tools/check.mjs
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm test
+      - run: npm run build

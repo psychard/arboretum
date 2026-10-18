@@ -29,18 +29,30 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
-      # No build step: the game is index.html as written. The runner's own Node
-      # is enough to parse it, so there is no setup-node and nothing to install.
-      - run: node tools/check.mjs
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+          # setup-node v5 started caching automatically off package.json's
+          # `packageManager` field. We have no such field, so this explicit
+          # line is still what turns the cache on.
+          cache: npm
+
+      - run: npm ci
+
+      # The save-format tests: a change that would lose someone's garden on
+      # load fails here, before it ships.
+      - run: npm test
+
+      # Typechecks, then bundles into dist/.
+      - run: npm run build
 
       - uses: actions/configure-pages@45bfe0192ca1faeb007ade9deae92b16b8254a0d # v6.0.0
 
-      # The repo root is the site. v4+ leaves dotfiles out of the artifact,
-      # which is what we want here: .github/ and .claude/ stay unpublished.
-      # README.md and tools/ do go up; they are harmless and not linked.
+      # Only the build goes up: dist/ holds the bundle plus public/ (icons,
+      # manifest, fonts) copied as is.
       - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
-          path: .
+          path: dist
 
   deploy:
     needs: build
