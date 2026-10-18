@@ -333,19 +333,55 @@ function curSeason(){return Math.floor(state.season/SEASON_LEN)%4;}
 function nextAvail(sp,si){for(let k=1;k<4;k++){if(sp.seasons.includes((si+k)%4))return (si+k)%4;}return si;}
 
 /* ---------- state ---------- */
+/* SAVE_KEY never changes: it is where every garden already lives. A change to the save's shape
+   bumps SAVE_V and adds a step to migrate(), which upgrades old saves in place, one version at a
+   time. An id renamed in SPECIES or DECOR goes in RENAMED (old: new). Anything a save holds that
+   this version can't build is kept in state.orphans and written back, never dropped, so a later
+   version can bring it back. The save as it stood when the page opened is kept under BAK_KEY. */
+const SAVE_V=2, BAK_KEY=SAVE_KEY+'.bak';
+const RENAMED={};
 let state=fresh();
-function fresh(){return {money:START_MONEY,trees:[],play:0,season:SEASON_LEN*0.5,visitorsTotal:0,earned:0,cats:0,nextCat:CAT_EVERY,started:false,decor:[],savedAt:0};}
-function load(){
-  try{const raw=localStorage.getItem(SAVE_KEY); if(!raw) return false; const s=JSON.parse(raw);
-    if(!s||typeof s.money!=='number') return false; state=Object.assign(fresh(),s); return true;}catch(e){return false;}
+function fresh(){return {v:SAVE_V,money:START_MONEY,trees:[],play:0,season:SEASON_LEN*0.5,visitorsTotal:0,earned:0,cats:0,nextCat:CAT_EVERY,started:false,decor:[],orphans:{trees:[],decor:[]},savedAt:0};}
+function migrate(s){
+  if(!(s.v>=1)) s.v=1;
+  if(s.v<2){s.orphans={trees:[],decor:[]}; s.v=2;} // v2: versioned, with orphans
+  return s;
 }
+/* Sort a save's trees and decorations into ones this version can build and orphans; orphans whose
+   id is known again (re-added, or renamed) come back. */
+function sortKnown(s){
+  const o=s.orphans&&typeof s.orphans==='object'?s.orphans:{}, ok=e=>e&&typeof e==='object';
+  const rename=(e,k)=>{if(RENAMED[e[k]])e[k]=RENAMED[e[k]];return e;};
+  const trees=[].concat(Array.isArray(s.trees)?s.trees:[],Array.isArray(o.trees)?o.trees:[]).filter(ok).map(e=>rename(e,'s'));
+  const decor=[].concat(Array.isArray(s.decor)?s.decor:[],Array.isArray(o.decor)?o.decor:[]).filter(ok).map(e=>rename(e,'d'));
+  s.trees=trees.filter(e=>SP[e.s]); s.decor=decor.filter(e=>DC[e.d]);
+  s.orphans={trees:trees.filter(e=>!SP[e.s]),decor:decor.filter(e=>!DC[e.d])};
+  if(s.orphans.trees.length||s.orphans.decor.length) console.warn('Arboretum: keeping items this version can’t show',s.orphans);
+  return s;
+}
+function load(){
+  let raw;
+  try{raw=localStorage.getItem(SAVE_KEY);}catch(e){console.warn('Arboretum: can’t read the save',e);return false;}
+  if(!raw) return false;
+  try{localStorage.setItem(BAK_KEY,raw);}catch(e){console.warn('Arboretum: can’t back up the save',e);}
+  try{const s=JSON.parse(raw);
+    if(!s||typeof s.money!=='number'){console.warn('Arboretum: the save is unreadable; a copy is under '+BAK_KEY);return false;}
+    state=Object.assign(fresh(),sortKnown(migrate(s))); return true;}
+  catch(e){console.warn('Arboretum: the save is unreadable; a copy is under '+BAK_KEY,e);return false;}
+}
+let saveWarned=false;
 function save(){
   if(visiting) return;
   try{state.decor=decors.map(d=>({d:d.d.id,x:+d.x.toFixed(2),z:+d.z.toFixed(2),r:+d.r.toFixed(3)})); state.savedAt=Date.now();
     state.trees=trees.map(t=>({s:t.sp.id,x:+t.x.toFixed(2),z:+t.z.toFixed(2),g:+t.g.toFixed(4),seed:t.seed}));
-    localStorage.setItem(SAVE_KEY,JSON.stringify(state));}catch(e){}
+    localStorage.setItem(SAVE_KEY,JSON.stringify(state)); saveWarned=false;}
+  catch(e){console.warn('Arboretum: couldn’t save',e);
+    if(!saveWarned){saveWarned=true;toast('Your garden couldn’t be saved on this device. Is storage full, or turned off?',null,6000);}}
   publishWorld();
 }
+/* Ask the browser not to clear the save when space runs low (Safari and Chrome decide quietly;
+   Firefox asks the player, once). Only from a tap on Begin or Plant, never out of nowhere. */
+function askPersist(){try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist().catch(()=>{});}catch(e){}}
 
 /* ---------- renderer ---------- */
 const canvas=$('#c');
@@ -1038,7 +1074,7 @@ $('#plantBtn').onclick=()=>{
   state.money-=price;
   if(isDecor(picked)){addDecor(picked.id,ghostPos.x,ghostPos.z,pickRot);toast(`Placed a ${picked.name.toLowerCase()}.`);}
   else{addTree(picked.id,ghostPos.x,ghostPos.z,stage.g);toast(`Planted a ${picked.name}.`);}
-  ghostPos=null; ghost.visible=false; updateBanner(); save(); refreshHud(true);
+  ghostPos=null; ghost.visible=false; updateBanner(); save(); askPersist(); refreshHud(true);
 };
 $('#rotBtn').onclick=()=>{pickRot+=Math.PI/4;updateBanner();};
 $('#doneBtn').onclick=()=>{picked=null;ghostPos=null;updateBanner();};
@@ -1423,7 +1459,7 @@ const awayAdv=had&&state.savedAt?driftSeasons((Date.now()-state.savedAt)/1000):0
 if(had&&state.started){$('#intro').style.display='none';running=true;
   const extra=awayAdv>=60?` While you were away, the seasons drifted on by ${Math.round(awayAdv/60)} min.`:'';
   toast(`Welcome back. It’s ${SEASONS[Math.floor(state.season/SEASON_LEN)%4].toLowerCase()} in your arboretum.${extra}`,null,6000);}
-$('#begin').onclick=()=>{$('#intro').style.display='none';state.started=true;running=true;save();publishWorld(true);};
+$('#begin').onclick=()=>{$('#intro').style.display='none';state.started=true;running=true;save();publishWorld(true);askPersist();};
 let hiddenAt=0;
 addEventListener('pagehide',save);
 document.addEventListener('visibilitychange',()=>{
