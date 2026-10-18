@@ -2,17 +2,25 @@ import * as THREE from 'three';
 import { $ } from './dom';
 
 /* ---------- renderer ---------- */
-export const canvas=$<HTMLCanvasElement>('#c');
-export const renderer=new THREE.WebGLRenderer({canvas,antialias:false,powerPreference:'high-performance'});
-renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,1.5));
-renderer.shadowMap.enabled=true; renderer.shadowMap.type=THREE.PCFSoftShadowMap;
-export const scene=new THREE.Scene();
-scene.background=new THREE.Color('#cfe0e8');
-scene.fog=new THREE.Fog(0xcfe0e8,55,160);
-export const camera=new THREE.PerspectiveCamera(50,1,0.1,500);
-export const rt=new THREE.WebGLRenderTarget(2,2,{minFilter:THREE.LinearFilter,magFilter:THREE.LinearFilter});
+export const canvas = $<HTMLCanvasElement>('#c');
+export const renderer = new THREE.WebGLRenderer({
+  canvas,
+  antialias: false,
+  powerPreference: 'high-performance',
+});
+renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 1.5));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+export const scene = new THREE.Scene();
+scene.background = new THREE.Color('#cfe0e8');
+scene.fog = new THREE.Fog(0xcfe0e8, 55, 160);
+export const camera = new THREE.PerspectiveCamera(50, 1, 0.1, 500);
+export const rt = new THREE.WebGLRenderTarget(2, 2, {
+  minFilter: THREE.LinearFilter,
+  magFilter: THREE.LinearFilter,
+});
 
-export const FRAG=`
+export const FRAG = `
 precision highp float;
 uniform sampler2D tDiffuse; uniform vec2 res;
 varying vec2 vUv;
@@ -54,19 +62,37 @@ void main(){
  vec2 q=vUv-0.5; col*=1.0-dot(q,q)*0.6;
  gl_FragColor=vec4(clamp(col,0.,1.),1.);
 }`;
-export const postScene=new THREE.Scene(), postCam=new THREE.OrthographicCamera(-1,1,1,-1,0,1);
-export const postMat=new THREE.ShaderMaterial({uniforms:{tDiffuse:{value:rt.texture},res:{value:new THREE.Vector2(2,2)}},
-  vertexShader:'varying vec2 vUv; void main(){vUv=uv; gl_Position=vec4(position.xy,0.,1.);}',fragmentShader:FRAG,depthTest:false,depthWrite:false});
-postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2,2),postMat));
-export function resize(){
-  const w=innerWidth,h=innerHeight; renderer.setSize(w,h,false);
-  camera.aspect=w/h; camera.updateProjectionMatrix();
-  const v=new THREE.Vector2(); renderer.getDrawingBufferSize(v); rt.setSize(v.x,v.y); postMat.uniforms.res.value.copy(v);
+export const postScene = new THREE.Scene(),
+  postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+export const postMat = new THREE.ShaderMaterial({
+  uniforms: { tDiffuse: { value: rt.texture }, res: { value: new THREE.Vector2(2, 2) } },
+  vertexShader: 'varying vec2 vUv; void main(){vUv=uv; gl_Position=vec4(position.xy,0.,1.);}',
+  fragmentShader: FRAG,
+  depthTest: false,
+  depthWrite: false,
+});
+postScene.add(new THREE.Mesh(new THREE.PlaneGeometry(2, 2), postMat));
+export function resize() {
+  const w = innerWidth,
+    h = innerHeight;
+  renderer.setSize(w, h, false);
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  const v = new THREE.Vector2();
+  renderer.getDrawingBufferSize(v);
+  rt.setSize(v.x, v.y);
+  postMat.uniforms.res.value.copy(v);
 }
-addEventListener('resize',resize); resize();
+addEventListener('resize', resize);
+resize();
 
 /* ---------- lights ---------- */
-export const hemi=new THREE.HemisphereLight(0xe4ecf0,0x6a5a3a,0.62); scene.add(hemi);
-export const sun=new THREE.DirectionalLight(0xfff0d8,0.95); sun.position.set(30,48,18); sun.castShadow=true;
-sun.shadow.mapSize.set(1024,1024); Object.assign(sun.shadow.camera,{left:-42,right:42,top:42,bottom:-42,near:1,far:160});
-sun.shadow.bias=-0.0008; scene.add(sun);
+export const hemi = new THREE.HemisphereLight(0xe4ecf0, 0x6a5a3a, 0.62);
+scene.add(hemi);
+export const sun = new THREE.DirectionalLight(0xfff0d8, 0.95);
+sun.position.set(30, 48, 18);
+sun.castShadow = true;
+sun.shadow.mapSize.set(1024, 1024);
+Object.assign(sun.shadow.camera, { left: -42, right: 42, top: 42, bottom: -42, near: 1, far: 160 });
+sun.shadow.bias = -0.0008;
+scene.add(sun);
