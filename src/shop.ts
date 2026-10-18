@@ -22,6 +22,7 @@ export let stage = STAGES[0],
   pickRot = 0,
   shopTab = 'trees';
 export const ghost = new THREE.Group();
+ghost.userData.ui = true; // never in a photo
 export const ghostRingMat = new THREE.MeshBasicMaterial({
   color: 0xffffff,
   transparent: true,

@@ -20,9 +20,12 @@ export const rt = new THREE.WebGLRenderTarget(2, 2, {
   magFilter: THREE.LinearFilter,
 });
 
+/* The painterly pass. Its brush is measured in screen pixels: "scale" is how many output pixels
+   stand for one of them, 1 on screen and more in a photo (photo.ts), so a big picture gets the same
+   strokes rather than ones a third the size. */
 export const FRAG = `
 precision highp float;
-uniform sampler2D tDiffuse; uniform vec2 res;
+uniform sampler2D tDiffuse; uniform vec2 res; uniform float scale;
 varying vec2 vUv;
 float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
 float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
@@ -30,10 +33,10 @@ float vn(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
  return mix(mix(a,b,f.x),mix(c,d,f.x),f.y);}
 const int R=3;
 void main(){
- vec2 px=1.0/res; vec2 p=vUv*res;
+ vec2 px=1.0/res; vec2 p=vUv*res/scale;
  vec2 jit=vec2(vn(p*0.045),vn(p*0.045+19.3))-0.5;
- vec2 uv=vUv+jit*px*5.0;
- float st=1.7;
+ vec2 uv=vUv+jit*px*5.0*scale;
+ float st=1.7*scale;
  vec3 m0=vec3(0.),m1=vec3(0.),m2=vec3(0.),m3=vec3(0.);
  vec3 s0=vec3(0.),s1=vec3(0.),s2=vec3(0.),s3=vec3(0.);
  vec3 c;
@@ -65,7 +68,7 @@ void main(){
 export const postScene = new THREE.Scene(),
   postCam = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
 export const postMat = new THREE.ShaderMaterial({
-  uniforms: { tDiffuse: { value: rt.texture }, res: { value: new THREE.Vector2(2, 2) } },
+  uniforms: { tDiffuse: { value: rt.texture }, res: { value: new THREE.Vector2(2, 2) }, scale: { value: 1 } },
   vertexShader: 'varying vec2 vUv; void main(){vUv=uv; gl_Position=vec4(position.xy,0.,1.);}',
   fragmentShader: FRAG,
   depthTest: false,
@@ -85,6 +88,14 @@ export function resize() {
 }
 addEventListener('resize', resize);
 resize();
+
+/** One frame to the screen: the scene into rt, then the painterly pass over it. */
+export function renderFrame() {
+  renderer.setRenderTarget(rt);
+  renderer.render(scene, camera);
+  renderer.setRenderTarget(null);
+  renderer.render(postScene, postCam);
+}
 
 /* ---------- lights ---------- */
 export const hemi = new THREE.HemisphereLight(0xe4ecf0, 0x6a5a3a, 0.62);

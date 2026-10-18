@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { $ } from './dom';
 import { CAT_EVERY, RARITY, SEASONS, SEASON_LEN, SPECIES, TICKET } from './data';
 import { askPersist, load, save, state } from './save';
-import { camera, hemi, postCam, postScene, renderer, rt, scene, sun } from './render';
+import { hemi, renderFrame, scene, sun } from './render';
 import { lerpCol, lerpNum } from './util';
 import { PAL, PART_O, PART_V, PN, SUN_I, W, pGeo, pMat, pPos, pSeed, points } from './world';
 import { addTree, growthScale, trees } from './trees';
@@ -24,6 +24,7 @@ import {
   visiting,
 } from './mp';
 import { gardenFromCode } from './share';
+import './photo';
 
 /* ---------- simulation ---------- */
 export let visitorClock = 0;
@@ -147,10 +148,7 @@ export function loop(now) {
   tickPresence(dt);
   renderThumbs(dt, t);
   tickHud(dt);
-  renderer.setRenderTarget(rt);
-  renderer.render(scene, camera);
-  renderer.setRenderTarget(null);
-  renderer.render(postScene, postCam);
+  renderFrame();
   requestAnimationFrame(loop);
 }
 

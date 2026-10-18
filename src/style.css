@@ -628,3 +628,109 @@ button:focus-visible {
     transition: none !important;
   }
 }
+
+/* photo mode: nothing on screen but the garden, the shutter and a way out */
+body.photo #hud,
+body.photo #banner,
+body.photo #visitBar,
+body.photo #toasts,
+body.photo #tags,
+body.photo #joy,
+body.photo #zoom,
+body.photo .floater {
+  display: none !important;
+}
+#photoBar {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 22px);
+  z-index: 6;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+body.photo #photoBar {
+  display: flex;
+}
+#photoBar > * {
+  pointer-events: auto;
+}
+#photoExit {
+  position: absolute;
+  left: 18px;
+  background: var(--chip);
+  box-shadow: var(--shadow);
+}
+#photoBar .hint {
+  position: absolute;
+  right: 18px;
+  font-size: 13px;
+  color: var(--ink);
+  background: var(--chip);
+  border-radius: 6px;
+  padding: 3px 8px;
+  pointer-events: none;
+}
+#shutter {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 250, 235, 0.95);
+  background: radial-gradient(circle, #fbf5e3 55%, rgba(255, 250, 235, 0.35) 57%);
+  box-shadow: var(--shadow);
+}
+#shutter:active {
+  transform: scale(0.94);
+}
+#flash {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+  background: #fffaf0;
+  opacity: 0;
+  pointer-events: none;
+}
+#flash.go {
+  animation: flash 0.5s ease-out;
+}
+@keyframes flash {
+  from {
+    opacity: 0.85;
+  }
+  to {
+    opacity: 0;
+  }
+}
+#photoView {
+  max-height: 92%;
+  z-index: 9;
+}
+#photoPic {
+  display: flex;
+  justify-content: center;
+  padding: 6px 16px 0;
+}
+#photoPic canvas {
+  display: block;
+  width: auto;
+  height: auto;
+  max-width: 100%;
+  max-height: calc(92vh - 150px);
+  box-shadow: var(--shadow);
+}
+.photo-acts {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  padding: 12px 18px 16px;
+}
+#photoFrame[aria-pressed='true']::before {
+  content: '✓ ';
+}
+@media (max-width: 420px) {
+  #photoBar .hint {
+    display: none;
+  }
+}

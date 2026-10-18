@@ -190,6 +190,7 @@ export function syncAvatars() {
         }),
       );
       ring.rotation.x = -Math.PI / 2;
+      ring.userData.ui = true; // marks the player, not part of the garden: never in a photo
       ring.position.y = 0.05;
       p.g.add(ring);
       p.g.position.set(info.x, 0, info.z);

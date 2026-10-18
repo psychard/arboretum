@@ -22,7 +22,7 @@ TypeScript, bundled by [Vite](https://vite.dev/). The game is plain three.js
   (buying and placing), `thumbs` (the shop's rotating 3D trees), `hud`, `ui`
   (toasts), `render` (renderer and the painterly post shader) and `mp`
   (visiting other gardens; see History), `share` and `sharing` (share links
-  and backups; see **Saves**).
+  and backups; see **Saves**), and `photo` (the 📷 chip: see **Photos**).
 - `src/data.ts`: every species and decoration, their prices and seasons.
 - `src/saveformat.ts` and `src/save.ts`: the save. See **Saves** below.
 - In `npm run dev`, the console's `arb` holds every module as the game loaded
@@ -64,6 +64,20 @@ The shop's footer has three ways for a garden to leave the browser (see
   garden with it. The garden it replaces is kept under
   `painted-arboretum-v1.replaced`. This is also the way to move a garden from
   Safari into the Home Screen app, which on iOS has storage of its own.
+
+## Photos
+
+The 📷 chip clears the screen down to the garden, a shutter and a Done
+button. The shutter paints the view again at about twice the screen's size
+(up to 4096 px on the long side), with sharper shadows for that one frame,
+and shows it mounted on paper with the season and date written under it; the
+paper frame can be turned off. Save goes to the share sheet on a phone (Save
+Image puts it in Photos) and to downloads elsewhere.
+
+The painterly pass in `render.ts` takes a `scale` uniform, the number of
+picture pixels per screen pixel, so a big picture gets the same brushwork as
+the screen rather than strokes a fraction of the size. Anything drawn in the
+scene only as UI should set `userData.ui = true` to stay out of photos.
 
 ## Deploys
 

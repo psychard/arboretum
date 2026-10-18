@@ -42,6 +42,7 @@
     <div class="chip" title="Cat sightings">🐈 <span class="num" id="cats">0</span></div>
     <button class="chip" id="playersBtn" style="display:none" aria-label="Fellow gardeners online">🧑‍🌾 <span class="num" id="online">0</span></button>
     <button class="chip" id="waveChip" style="display:none" aria-label="Wave">👋</button>
+    <button class="chip" id="photoBtn" aria-label="Take a picture">📷</button>
   </div>
   <div id="hint">Plant your first tree; visitors only come to see trees.</div>
 </div>
@@ -59,6 +60,21 @@
 <div id="joy" aria-label="Camera joystick"><div id="knob"></div></div>
 <div id="zoom"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button></div>
 <div id="toasts"></div>
+
+<div id="photoBar">
+  <button class="btn" id="photoExit">Done</button>
+  <button id="shutter" aria-label="Take the picture"></button>
+  <span class="hint">Drag to turn, pinch to zoom</span>
+</div>
+<div id="flash"></div>
+<div id="photoView" class="paper sheet" aria-hidden="true">
+  <div class="shop-head"><h2>Your picture</h2><button class="btn" id="photoBack">Back</button></div>
+  <div id="photoPic"></div>
+  <div class="photo-acts">
+    <button class="btn" id="photoFrame" aria-pressed="true">Paper frame</button>
+    <button class="btn primary" id="photoSave">Save picture</button>
+  </div>
+</div>
 
 <div id="shop" class="paper sheet" aria-hidden="true">
   <div class="shop-head"><h2>Shop</h2><span class="wallet num" id="wallet">$100</span><button class="btn" id="closeShop">Close</button></div>
