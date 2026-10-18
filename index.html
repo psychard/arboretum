@@ -364,10 +364,12 @@ function load(){
   try{raw=localStorage.getItem(SAVE_KEY);}catch(e){console.warn('Arboretum: can’t read the save',e);return false;}
   if(!raw) return false;
   try{localStorage.setItem(BAK_KEY,raw);}catch(e){console.warn('Arboretum: can’t back up the save',e);}
-  try{const s=JSON.parse(raw);
-    if(!s||typeof s.money!=='number'){console.warn('Arboretum: the save is unreadable; a copy is under '+BAK_KEY);return false;}
-    state=Object.assign(fresh(),sortKnown(migrate(s))); return true;}
-  catch(e){console.warn('Arboretum: the save is unreadable; a copy is under '+BAK_KEY,e);return false;}
+  let s=null; try{s=JSON.parse(raw); s=s&&typeof s.money==='number'?sortKnown(migrate(s)):null;}catch(e){console.warn(e);s=null;}
+  if(!s){
+    // a fresh game will save over this, and the next page load over BAK_KEY: keep it somewhere neither touches
+    try{localStorage.setItem(SAVE_KEY+'.unreadable',raw);}catch(e){}
+    console.warn('Arboretum: the save is unreadable; a copy is under '+SAVE_KEY+'.unreadable'); return false;}
+  state=Object.assign(fresh(),s); return true;
 }
 let saveWarned=false;
 function save(){
