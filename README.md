@@ -21,10 +21,14 @@ TypeScript, bundled by [Vite](https://vite.dev/). The game is plain three.js
   obstacles and walking), `camera` (joystick, drag, pinch), `shop`
   (buying and placing), `thumbs` (the shop's rotating 3D trees), `hud`, `ui`
   (toasts), `render` (renderer and the painterly post shader) and `mp`
-  (visiting other gardens; see History).
+  (visiting other gardens; see History), `share` and `sharing` (share links
+  and backups; see **Saves**).
 - `src/data.ts`: every species and decoration, their prices and seasons.
 - `src/saveformat.ts` and `src/save.ts`: the save. See **Saves** below.
-- `tests/`: the save-format tests and one fixture save per save version.
+- In `npm run dev`, the console's `arb` holds every module as the game loaded
+  it (`arb.save.state`, `arb.render.renderer.info`, ...).
+- `tests/`: tests for the save format, share links and backups, with one
+  fixture save per save version.
 - `public/`: icons, `manifest.json` (so Share → **Add to Home Screen** installs
   it as *Arboretum*, full screen) and the Architects Daughter typeface (SIL Open
   Font License), served from here so the game makes no third-party requests.
@@ -46,6 +50,20 @@ the browser and the origin. That key never changes. To change the save's
 shape, bump `SAVE_V`, add a step to `migrate()` and add a fixture to
 `tests/saves/`. To rename a species or decoration id, add it to `RENAMED`.
 A save entry this version can't build is kept in `orphans`, never dropped.
+
+The shop's footer has three ways for a garden to leave the browser (see
+`src/share.ts` for the formats and `src/sharing.ts` for the buttons):
+
+- **Share** makes a link, `arboretum.psychard.com/#g=…`, carrying the trees,
+  decorations and season, compressed (a garden of 20 trees is about 350
+  characters). Opening it is a read-only visit, like visiting another
+  player, and works with nobody else online.
+- **Back up** saves the whole save as a JSON file (on a phone, through the
+  share sheet, so it can go to Files or AirDrop).
+- **Restore** reads such a file and, after a confirming tap, replaces this
+  garden with it. The garden it replaces is kept under
+  `painted-arboretum-v1.replaced`. This is also the way to move a garden from
+  Safari into the Home Screen app, which on iOS has storage of its own.
 
 ## Deploys
 

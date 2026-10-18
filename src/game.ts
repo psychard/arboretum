@@ -14,7 +14,16 @@ import { focusOn, joyX, joyY, unfocus, updateCamera } from './camera';
 import { renderThumbs } from './thumbs';
 import { floatText, toast } from './ui';
 import { refreshHud, tickHud } from './hud';
-import { initMultiplayer, publishWorld, tickPresence, updateAvatars, visiting } from './mp';
+import {
+  initMultiplayer,
+  onLeaveShared,
+  publishWorld,
+  tickPresence,
+  updateAvatars,
+  visitShared,
+  visiting,
+} from './mp';
+import { gardenFromCode } from './share';
 
 /* ---------- simulation ---------- */
 export let visitorClock = 0;
@@ -162,11 +171,13 @@ if (had && state.started) {
   running = true;
   const extra =
     awayAdv >= 60 ? ` While you were away, the seasons drifted on by ${Math.round(awayAdv / 60)} min.` : '';
-  toast(
-    `Welcome back. It’s ${SEASONS[Math.floor(state.season / SEASON_LEN) % 4].toLowerCase()} in your arboretum.${extra}`,
-    null,
-    6000,
-  );
+  // opening a share link, the welcome is for the garden being visited (openSharedLink, below)
+  if (!location.hash.startsWith('#g='))
+    toast(
+      `Welcome back. It’s ${SEASONS[Math.floor(state.season / SEASON_LEN) % 4].toLowerCase()} in your arboretum.${extra}`,
+      null,
+      6000,
+    );
 }
 $('#begin').onclick = () => {
   $('#intro').style.display = 'none';
@@ -193,6 +204,29 @@ document.addEventListener('visibilitychange', () => {
 refreshHud(true);
 requestAnimationFrame(loop);
 initMultiplayer();
+
+/* A share link (#g=...) opens that garden for a walk around, over whatever this browser has. */
+async function openSharedLink() {
+  const m = location.hash.match(/^#g=([\w-]+)/);
+  if (!m) return;
+  const view = await gardenFromCode(m[1]);
+  if (!view) {
+    toast('That garden link didn’t work; it may have been cut short when it was copied.', null, 6000);
+    history.replaceState(null, '', location.pathname + location.search);
+    return;
+  }
+  visitShared(view);
+  $('#intro').style.display = 'none';
+  running = true;
+}
+// someone who came by link and hasn't begun a garden of their own gets the intro on the way home
+onLeaveShared(() => {
+  if (state.started) return;
+  running = false;
+  $('#intro').style.display = '';
+});
+openSharedLink();
+addEventListener('hashchange', openSharedLink);
 
 // In `npm run dev` the console can reach every module as the game itself
 // loaded it, e.g. arb.save.state, arb.people.people or arb.render.renderer.info.

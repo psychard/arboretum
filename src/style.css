@@ -540,8 +540,13 @@ button:focus-visible {
   align-items: center;
   border-top: 1px dashed var(--line);
 }
-.stats .btn {
+.stats .acts {
   margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.stats .btn {
   font-size: 13px;
   padding: 4px 10px;
 }

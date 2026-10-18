@@ -13,6 +13,7 @@ import { cat, removeCat } from './animals';
 import { toast } from './ui';
 import { refreshHud } from './hud';
 import { leaveVisit, visiting } from './mp';
+import { backupGarden, prepareShare, restoreGarden, shareGarden } from './sharing';
 
 /* ---------- planting ---------- */
 export let stage = STAGES[0],
@@ -288,7 +289,10 @@ export function renderList() {
   $('#wallet').textContent = '$' + Math.floor(state.money).toLocaleString();
   const mins = Math.floor(state.play / 60);
   $('#stats').innerHTML =
-    `<span>${trees.length} trees</span><span>${decors.length} decorations</span><span>${state.visitorsTotal} visitors</span><span>$${state.earned.toLocaleString()} in tickets</span><span>${mins} min played</span><button class="btn" id="reset">Start over</button>`;
+    `<span>${trees.length} trees</span><span>${decors.length} decorations</span><span>${state.visitorsTotal} visitors</span><span>$${state.earned.toLocaleString()} in tickets</span><span>${mins} min played</span><span class="acts"><button class="btn" id="shareBtn">Share</button><button class="btn" id="backupBtn">Back up</button><button class="btn" id="restoreBtn">Restore</button><button class="btn" id="reset">Start over</button></span>`;
+  $('#shareBtn').onclick = shareGarden;
+  $('#backupBtn').onclick = backupGarden;
+  $('#restoreBtn').onclick = restoreGarden;
   let armed = false;
   const rb = $('#reset');
   rb.onclick = () => {
@@ -311,6 +315,7 @@ export function openShop() {
   }
   renderSeg();
   renderList();
+  prepareShare();
   $('#shop').classList.add('open');
   $('#shop').setAttribute('aria-hidden', 'false');
 }

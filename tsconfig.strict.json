@@ -3,5 +3,5 @@
   // inline script with strict off; move a file here once it is typed.
   "extends": "./tsconfig.json",
   "compilerOptions": { "strict": true, "noImplicitAny": true },
-  "include": ["src/data.ts", "src/saveformat.ts", "src/dom.ts", "tests"]
+  "include": ["src/data.ts", "src/saveformat.ts", "src/share.ts", "src/dom.ts", "tests"]
 }

@@ -325,13 +325,18 @@ export function clearShown() {
   clearPeople();
   waterChanged();
 }
+/** Where we are, for the visit bar: someone's arboretum, or one shared by link. */
+export function visitLabel() {
+  return visiting.shared ? 'a shared arboretum' : `${nameOf(visiting.owner)}’s arboretum`;
+}
 export function setVisitUi() {
   $('#visitBar').style.display = visiting ? 'flex' : 'none';
   $('#shopBtn').style.display = visiting ? 'none' : '';
-  if (visiting) $('#visitTxt').textContent = `Visiting ${nameOf(visiting.owner)}’s arboretum`;
+  $('#waveBtn').style.display = MP.room ? '' : 'none';
+  if (visiting) $('#visitTxt').textContent = `Visiting ${visitLabel()}`;
 }
-export function enterVisit(owner) {
-  if (!MP.db || !owner || owner === MP.myId) return;
+/* Put our own garden aside (it comes back in leaveVisit) and save it first. */
+function leaveHome(v) {
   if (visiting) leaveVisit(true);
   save();
   dropPick();
@@ -340,9 +345,23 @@ export function enterVisit(owner) {
   stash.trees.forEach(t => treeRoot.remove(t.group));
   stash.decors.forEach(d => decorRoot.remove(d.group));
   clearPeople();
-  visiting = { owner, stash, ver: null, unsub: null, first: true };
+  visiting = { ...v, stash, ver: null, unsub: null, first: true };
   waterChanged();
   setVisitUi();
+}
+/* A garden from a share link (#g=...): a snapshot to walk around, with no owner online. */
+export function visitShared(view) {
+  leaveHome({ owner: null, shared: true });
+  buildVisit({ ...view, ver: 1 });
+}
+let afterShared = () => {};
+/** What to do on the way home from a shared garden (game.ts shows the intro to someone new). */
+export function onLeaveShared(f) {
+  afterShared = f;
+}
+export function enterVisit(owner) {
+  if (!MP.db || !owner || owner === MP.myId) return;
+  leaveHome({ owner });
   sendPresence(true);
   syncAvatars();
   toast('Walking over…');
@@ -391,7 +410,13 @@ export function buildVisit(d) {
   if (visiting.first) {
     visiting.first = false;
     state.season = num(d.season, 0, SEASON_LEN * 4 - 1, state.season);
-    toast(`Welcome to ${nameOf(visiting.owner)}’s arboretum.`);
+    toast(
+      visiting.shared
+        ? 'Someone shared their arboretum with you. Have a look around!'
+        : `Welcome to ${nameOf(visiting.owner)}’s arboretum.`,
+      null,
+      visiting.shared ? 5000 : undefined,
+    );
   }
 }
 export function leaveVisit(silent?) {
@@ -416,6 +441,11 @@ export function leaveVisit(silent?) {
   setVisitUi();
   sendPresence(true);
   syncAvatars();
+  // a silent leave is on the way to another garden, not home
+  if (v.shared && !silent) {
+    history.replaceState(null, '', location.pathname + location.search);
+    afterShared();
+  }
   if (!silent) toast('Back home in your own arboretum.');
 }
 $('#playersBtn').onclick = openPlayers;

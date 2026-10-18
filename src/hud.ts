@@ -5,7 +5,7 @@ import { trees } from './trees';
 import { people } from './people';
 import { dropPick, openShop, picked, priceOf, renderList, shopTab, stage, updateBanner } from './shop';
 import { toast } from './ui';
-import { MP, nameOf, visiting } from './mp';
+import { MP, visitLabel, visiting } from './mp';
 
 /* ---------- HUD ---------- */
 export let hudClock = 0,
@@ -37,8 +37,11 @@ export function refreshHud(force?) {
     si = Math.floor(ph) % 4,
     frac = ph - Math.floor(ph),
     left = Math.ceil(((1 - frac) * SEASON_LEN) / 60);
-  if (lastSi >= 0 && si !== lastSi) onSeasonChange(si, lastSi);
-  lastSi = si;
+  // only the home garden's seasons count: a visit shows someone else's, and the nursery is shut
+  if (!visiting) {
+    if (lastSi >= 0 && si !== lastSi) onSeasonChange(si, lastSi);
+    lastSi = si;
+  }
   $('#seasonTxt').textContent = `${SEASON_ICON[si]} ${SEASONS[si]}, ${left} min left`;
   $('#seasonBar').style.width = (frac * 100).toFixed(1) + '%';
   $('#hint').style.display = trees.length || visiting || picked ? 'none' : 'block';
@@ -48,7 +51,7 @@ export function refreshHud(force?) {
     document.documentElement.style.setProperty('--hud-h', hh + 'px');
   }
   $('#waveChip').style.display = MP.avatars.size && !visiting ? '' : 'none';
-  if (visiting) $('#visitTxt').textContent = `Visiting ${nameOf(visiting.owner)}’s arboretum`;
+  if (visiting) $('#visitTxt').textContent = `Visiting ${visitLabel()}`;
   if ($('#shop').classList.contains('open')) {
     const sig =
       shopTab +

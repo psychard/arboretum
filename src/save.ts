@@ -43,8 +43,9 @@ export function load() {
   return true;
 }
 export let saveWarned = false;
+let replaced = false;
 export function save() {
-  if (visiting) return;
+  if (visiting || replaced) return;
   try {
     state.decor = decors.map(d => ({
       d: d.d.id,
@@ -81,4 +82,20 @@ export function askPersist() {
 
 export function resetState() {
   state = fresh();
+}
+
+/* Swap in a restored backup: the garden being replaced is kept under SAVE_KEY + '.replaced', and
+   no later save (the one on pagehide included) may write over the new one before the reload. */
+export function replaceWith(s: SaveState) {
+  save();
+  try {
+    localStorage.setItem(SAVE_KEY + '.replaced', JSON.stringify(state));
+    localStorage.setItem(SAVE_KEY, JSON.stringify(s));
+  } catch (e) {
+    console.warn('Arboretum: couldn’t restore', e);
+    toast('There isn’t room to restore that garden on this device.', null, 6000);
+    return;
+  }
+  replaced = true;
+  location.replace(location.pathname);
 }
