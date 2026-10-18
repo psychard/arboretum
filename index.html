@@ -6,8 +6,8 @@
 <meta name="theme-color" content="#cdb68a">
 <title>The Painted Arboretum — Psychard</title>
 <meta name="description" content="Plant a garden of painted trees, watch them grow through the seasons and sell tickets to the visitors who come to see them.">
-<link rel="canonical" href="https://www.psychard.com/arboretum/">
-<link rel="manifest" href="/arboretum/manifest.json">
+<link rel="canonical" href="https://arboretum.psychard.com/">
+<link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/icons/psychard.svg" type="image/svg+xml">
 <link rel="icon" href="/icons/favicon-32.png" sizes="32x32" type="image/png">
 <link rel="apple-touch-icon" href="/icons/arboretum.png">
@@ -17,16 +17,16 @@
 <meta name="apple-mobile-web-app-title" content="Arboretum">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Psychard">
-<meta property="og:url" content="https://www.psychard.com/arboretum/">
+<meta property="og:url" content="https://arboretum.psychard.com/">
 <meta property="og:title" content="The Painted Arboretum">
 <meta property="og:description" content="Plant a garden of painted trees and watch them grow through the seasons.">
-<meta property="og:image" content="https://www.psychard.com/icons/og-arboretum.jpg">
+<meta property="og:image" content="https://arboretum.psychard.com/icons/og-arboretum.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta property="og:image:type" content="image/jpeg">
 <meta property="og:image:alt" content="A painted garden of trees around a fountain, drawn as if in oils.">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:image" content="https://www.psychard.com/icons/og-arboretum.jpg">
+<meta name="twitter:image" content="https://arboretum.psychard.com/icons/og-arboretum.jpg">
 <style>
 /* Architects Daughter by Kimberly Geswein, SIL Open Font License 1.1.
    Served from this repo rather than Google Fonts so the game keeps its
@@ -242,7 +242,7 @@ button:focus-visible{outline:2px dashed var(--accent);outline-offset:2px}
     <p>Trees grow while you play, and the seasons turn slowly; each one lasts an hour. Keep an eye out for the gray cat, who wanders by every five minutes.</p>
     <p>Use the joystick in the corner to circle the garden, or drag the scene. Pinch or use + and − to zoom.</p>
     <button class="btn primary" id="begin">Begin</button>
-    <a class="home" href="/">psychard.com</a>
+    <a class="home" href="https://www.psychard.com/">psychard.com</a>
   </div>
 </div>
 
@@ -264,7 +264,7 @@ if(!window.THREE||!webglOk()){
   const h=document.createElement('h1'); h.textContent='The Painted Arboretum';
   const p=document.createElement('p');
   p.textContent='This garden is painted with WebGL, which this browser does not seem to have available. Another browser, or hardware acceleration switched back on in the settings, should bring it back.';
-  const a=document.createElement('a'); a.className='home'; a.href='/'; a.textContent='psychard.com';
+  const a=document.createElement('a'); a.className='home'; a.href='https://www.psychard.com/'; a.textContent='psychard.com';
   card.append(h,p,a);
   return;
 }
