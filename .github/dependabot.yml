@@ -31,5 +31,8 @@ updates:
       # the painted look. @types/three has to match it.
       - dependency-name: "three"
       - dependency-name: "@types/three"
+      # The types follow the Node the workflows run (22), not the newest Node.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
     labels:
       - dependencies
