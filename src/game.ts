@@ -193,3 +193,12 @@ document.addEventListener('visibilitychange', () => {
 refreshHud(true);
 requestAnimationFrame(loop);
 initMultiplayer();
+
+// In `npm run dev` the console can reach every module as the game itself
+// loaded it, e.g. arb.save.state, arb.people.people or arb.render.renderer.info.
+// (Importing a module from the console instead can load a second copy of it.)
+// Vite drops this from production builds.
+if (import.meta.env.DEV) {
+  const mods = import.meta.glob(['./*.ts', '!./main.ts'], { eager: true });
+  (window as any).arb = Object.fromEntries(Object.entries(mods).map(([k, m]) => [k.slice(2, -3), m]));
+}
