@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { curSeason, state } from './save';
 import { scene } from './render';
 import { G, GEO, PMAT, pmat, shadowAll } from './util';
-import { duckPonds, inWater, walkTo } from './water';
+import { duckPonds, inWater, walkRoute, walkTo } from './water';
 import { focusCam, unfocus } from './camera';
 import { floatText, toast } from './ui';
 
@@ -109,7 +109,7 @@ export function updateCat(dt) {
   c.legs[3].rotation.x = sw;
   c.legs[1].rotation.x = -sw;
   c.legs[2].rotation.x = -sw;
-  const done = walkTo(c.g, cat.state === 'in' ? cat.target : cat.exit, 1.5, dt, true);
+  const done = walkRoute(c.g, cat, cat.state === 'in' ? cat.target : cat.exit, 1.5, dt);
   if (done) {
     if (cat.state === 'in') cat.state = 'sit';
     else {

@@ -5,7 +5,7 @@ import { scene } from './render';
 import { G, pmat, shadowAll } from './util';
 import { trees } from './trees';
 import { decors, groundY, localToWorld } from './decor';
-import { duckPonds, inWater, walkTo } from './water';
+import { duckPonds, inWater, walkRoute, walkTo } from './water';
 import { startFeed } from './animals';
 import { floatText } from './ui';
 import { visiting } from './mp';
@@ -426,7 +426,7 @@ export function updatePeople(dt) {
       v.wave = 0;
       v.p.arms[1].rotation.z = -0.06;
     }
-    if (walkTo(g, v.path[v.i], v.speed, dt, true)) {
+    if (walkRoute(g, v, v.path[v.i], v.speed, dt)) {
       const a = v.acts[v.i];
       if (a && a.type === 'sit') sitDown(v, a);
       else if (a && a.type === 'feed') startFeed(v, a.pd);

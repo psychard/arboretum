@@ -1,6 +1,7 @@
 import * as THREE from 'three';
 import { POND, POND_R } from './world';
 import { decors, localToWorld } from './decor';
+import { type Point, WalkGrid } from './route';
 
 /* ---------- water obstacles and ducks ---------- */
 
@@ -10,7 +11,11 @@ export let obsDirty = true,
 export function waterObstacles() {
   if (!obsDirty) return OBS;
   obsDirty = false;
-  OBS = [{ x: POND.x, z: POND.z, r: POND_R + 0.2 }];
+  // the big pond, and the fountain's basin in the plaza
+  OBS = [
+    { x: POND.x, z: POND.z, r: POND_R + 0.2 },
+    { x: 0, z: 0, r: 1.85 },
+  ];
   for (const d of decors) {
     if (d.d.id === 'minipond') OBS.push({ x: d.x, z: d.z, r: 1.7 });
     if (d.d.id === 'bridge')
@@ -36,39 +41,13 @@ export function duckPonds() {
   );
 }
 
-export function walkTo(obj, target, speed, dt, avoid?) {
+/** One step straight towards target; true once there. */
+export function walkTo(obj, target, speed, dt) {
   const d = new THREE.Vector3().subVectors(target, obj.position);
   d.y = 0;
   const dist = d.length();
   if (dist < 0.15) return true;
   d.normalize();
-  if (avoid) {
-    const ob = waterObstacles(),
-      px = obj.position.x,
-      pz = obj.position.z;
-    for (const c of ob) {
-      const ox = px - c.x,
-        oz = pz - c.z,
-        od = Math.hypot(ox, oz) || 0.001;
-      if (od < c.r + 0.1) {
-        d.set(ox / od, 0, oz / od);
-        break;
-      }
-      const look = Math.min(1.2, dist),
-        ax = px + d.x * look - c.x,
-        az = pz + d.z * look - c.z;
-      if (Math.hypot(ax, az) < c.r + 0.35 && Math.hypot(target.x - c.x, target.z - c.z) > c.r) {
-        let tx = -oz / od,
-          tz = ox / od;
-        if (tx * d.x + tz * d.z < 0) {
-          tx = -tx;
-          tz = -tz;
-        }
-        d.set(tx, 0, tz);
-        break;
-      }
-    }
-  }
   const step = Math.min(dist, speed * dt);
   obj.position.addScaledVector(d, step);
   const want = Math.atan2(d.x, d.z);
@@ -78,10 +57,47 @@ export function walkTo(obj, target, speed, dt, avoid?) {
   return false;
 }
 
+/* The water as a grid to plan routes on (route.ts), remade when the water changes. */
+let waterVer = 0,
+  grid: WalkGrid | null = null,
+  gridVer = -1;
+function walkGrid() {
+  if (!grid || gridVer !== waterVer) {
+    grid = new WalkGrid(waterObstacles());
+    gridVer = waterVer;
+  }
+  return grid;
+}
+const step = new THREE.Vector3();
+/** One step along a route round the water to target; true once there. The route is kept on h
+    (a visitor, the cat, an avatar) and planned again when the target or the water changes. */
+export function walkRoute(
+  obj,
+  h: { route?: Point[]; routeTo?: unknown; routeVer?: number },
+  target,
+  speed,
+  dt,
+) {
+  if (!h.route || h.routeTo !== target || h.routeVer !== waterVer) {
+    h.route = walkGrid().findPath(obj.position.x, obj.position.z, target.x, target.z);
+    h.routeTo = target;
+    h.routeVer = waterVer;
+  }
+  const r = h.route,
+    next = r[0];
+  if (!next) return true;
+  if (walkTo(obj, step.set(next.x, obj.position.y, next.z), speed, dt)) {
+    r.shift();
+    return r.length === 0;
+  }
+  return false;
+}
+
 /* placing, clearing or swapping decorations moves the water: rebuild obstacles and ducks */
 export function waterChanged() {
   obsDirty = true;
   ducksDirty = true;
+  waterVer++;
 }
 export function takeDucksDirty() {
   const d = ducksDirty;

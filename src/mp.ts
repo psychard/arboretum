@@ -6,7 +6,7 @@ import { camera, scene } from './render';
 import { freeGeo } from './util';
 import { addTree, treeRoot, trees } from './trees';
 import { addDecor, decorRoot, decors } from './decor';
-import { walkTo, waterChanged } from './water';
+import { walkRoute, waterChanged } from './water';
 import { clearPeople, makePerson } from './people';
 import { camTarget } from './camera';
 import { closeShop, dropPick } from './shop';
@@ -209,7 +209,7 @@ export function syncAvatars() {
 export function updateAvatars(dt) {
   for (const [, av] of MP.avatars) {
     const g = av.p.g;
-    if (!walkTo(g, av.target, 3.2, dt, true)) {
+    if (!walkRoute(g, av, av.target, 3.2, dt)) {
       av.phase += dt * 10;
       const sw = Math.sin(av.phase) * 0.5;
       av.p.legs[0].rotation.x = sw;
