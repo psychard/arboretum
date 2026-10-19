@@ -8,9 +8,9 @@ import { GARDEN_R, POND, POND_R } from './world';
 import { addTree, growthScale, treeRoot, trees } from './trees';
 import { addDecor, decorRoot, decors, makeDecor } from './decor';
 import { waterChanged } from './water';
-import { clearPeople } from './people';
+import { clearPeople, people, standUp } from './people';
 import { cat, removeCat } from './animals';
-import { toast } from './ui';
+import { floatText, toast } from './ui';
 import { refreshHud } from './hud';
 import { leaveVisit, visiting } from './mp';
 import { backupGarden, prepareShare, restoreGarden, shareGarden } from './sharing';
@@ -76,6 +76,7 @@ export function placeError(x, z, rad) {
   return null;
 }
 export function onTap(cx, cy) {
+  if (document.body.classList.contains('photo')) return; // framing a picture, not tending the garden
   const ndc = new THREE.Vector2((cx / innerWidth) * 2 - 1, -(cy / innerHeight) * 2 + 1);
   ray.setFromCamera(ndc, camera);
   if (picked) {
@@ -103,13 +104,82 @@ export function onTap(cx, cy) {
   if (hits.length) {
     let o = hits[0].object;
     while (o && !o.userData.tree && !o.userData.decor) o = o.parent;
+    // in your own garden the note offers to remove it; someone else's you can only admire
+    const offer = (item, kind) =>
+      visiting ? undefined : { label: 'Remove…', fn: () => confirmRemove(item, kind) };
     if (o && o.userData.tree) {
       const t = o.userData.tree;
-      toast(`${t.sp.name}: ${Math.round(t.g * 100)}% grown. ${t.sp.rarity}.`);
+      toast(`${t.sp.name}: ${Math.round(t.g * 100)}% grown. ${t.sp.rarity}.`, offer(t, 'tree'), 5000);
     } else if (o && o.userData.decor) {
-      toast(`${o.userData.decor.d.name}. Visitors love it.`);
+      toast(`${o.userData.decor.d.name}. Visitors love it.`, offer(o.userData.decor, 'decor'), 5000);
     }
   }
+}
+
+/* ---------- removing a tree or decoration ----------
+   Two taps (Remove… on the note, then Remove on the question), with a red ring round the thing
+   meanwhile, so nothing goes by accident. Half its worth comes back: a decoration's price, or a
+   tree's at the stage it has grown into. */
+const markRing = new THREE.Mesh(
+  new THREE.RingGeometry(0.9, 1.15, 40),
+  new THREE.MeshBasicMaterial({ color: 0xd06040, transparent: true, opacity: 0.9, depthWrite: false }),
+);
+markRing.rotation.x = -Math.PI / 2;
+markRing.position.y = 0.07;
+markRing.visible = false;
+markRing.userData.ui = true; // never in a photo
+scene.add(markRing);
+let markTimer = 0;
+
+const itemName = (item, kind) => (kind === 'tree' ? item.sp.name : item.d.name.toLowerCase());
+function stageOf(g) {
+  let st = STAGES[0];
+  for (const s of STAGES) if (g >= s.g) st = s;
+  return st;
+}
+export function refundOf(item, kind) {
+  return Math.floor((kind === 'tree' ? priceOf(item.sp, stageOf(item.g)) : item.d.price) / 2);
+}
+function confirmRemove(item, kind) {
+  if (visiting || !(kind === 'tree' ? trees : decors).includes(item)) return;
+  const back = refundOf(item, kind);
+  markRing.position.set(item.x, 0.07, item.z);
+  markRing.scale.setScalar(kind === 'tree' ? 1 : item.d.rad / 1.05);
+  markRing.visible = true;
+  clearTimeout(markTimer);
+  markTimer = window.setTimeout(() => (markRing.visible = false), 8000);
+  toast(
+    `Remove the ${itemName(item, kind)}? You’ll get $${back} back.`,
+    { label: 'Remove', fn: () => removeItem(item, kind) },
+    8000,
+  );
+}
+export function removeItem(item, kind) {
+  markRing.visible = false;
+  clearTimeout(markTimer);
+  if (visiting) return;
+  const back = refundOf(item, kind);
+  if (kind === 'tree') {
+    const k = trees.indexOf(item);
+    if (k < 0) return;
+    trees.splice(k, 1);
+    treeRoot.remove(item.group);
+    freeGeo(item.group);
+  } else {
+    const k = decors.indexOf(item);
+    if (k < 0) return;
+    // anyone sitting on it stands up first
+    people.filter(v => v.sitting && v.sitting.d === item).forEach(standUp);
+    decors.splice(k, 1);
+    decorRoot.remove(item.group);
+    freeGeo(item.group);
+    waterChanged(); // a pond or bridge going changes the water and the ducks
+  }
+  state.money += back;
+  floatText('+$' + back, new THREE.Vector3(item.x, 2, item.z));
+  toast(`Removed the ${itemName(item, kind)}. $${back} back.`);
+  save();
+  refreshHud(true);
 }
 export function setGhost() {
   if (ghostDecor) {
