@@ -50,12 +50,13 @@ export const SEASON_LEN = 3600,
   START_MONEY = 100;
 export const SEASONS: string[] = ['Spring', 'Summer', 'Autumn', 'Winter'];
 export const SEASON_ICON: string[] = ['🌸', '☀️', '🍂', '❄️'];
-export const RARITY: Record<RarityName, { w: number; c: string; grow: number }> = {
-  Common: { w: 1, c: '#5f8a3f', grow: 1200 },
-  Uncommon: { w: 1.7, c: '#2f7480', grow: 1800 },
-  Rare: { w: 2.8, c: '#80479a', grow: 2400 },
-  Exotic: { w: 4.2, c: '#b0532e', grow: 3000 },
-  Legendary: { w: 7, c: '#a8821e', grow: 4200 },
+/* w: how much a tree draws visitors; years: garden years (four seasons) from seedling to full size */
+export const RARITY: Record<RarityName, { w: number; c: string; years: number }> = {
+  Common: { w: 1, c: '#5f8a3f', years: 0.5 },
+  Uncommon: { w: 1.7, c: '#2f7480', years: 0.75 },
+  Rare: { w: 2.8, c: '#80479a', years: 1 },
+  Exotic: { w: 4.2, c: '#b0532e', years: 1.25 },
+  Legendary: { w: 7, c: '#a8821e', years: 1.75 },
 };
 export const STAGES: Stage[] = [
   { id: 'sapling', name: 'Sapling', mult: 1, g: 0.05 },

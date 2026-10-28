@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { SP, SPECIES } from './data';
+import { growOver } from './growth';
 import { scene } from './render';
 import { BLOBS, mat, rng, shadowAll, toCols } from './util';
 
@@ -267,6 +268,21 @@ export function makeTree(sp, seed, mats?) {
 }
 export function growthScale(g) {
   return 0.22 + 0.78 * g;
+}
+/** Grow every tree through span seconds of the year from season (time away); the number of trees
+    that grew, and of those that reached full size. */
+export function ageTrees(season, span) {
+  let grew = 0,
+    grown = 0;
+  for (const t of trees) {
+    const g = growOver(t.g, t.sp.rarity, season, span);
+    if (g - t.g < 0.005) continue;
+    grew++;
+    if (g >= 1) grown++;
+    t.g = g;
+    t.group.scale.setScalar(growthScale(g));
+  }
+  return { grew, grown };
 }
 export function addTree(spId, x, z, g, seed?) {
   const sp = SP[spId];

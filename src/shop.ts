@@ -109,7 +109,8 @@ export function onTap(cx, cy) {
       visiting ? undefined : { label: 'Remove…', fn: () => confirmRemove(item, kind) };
     if (o && o.userData.tree) {
       const t = o.userData.tree;
-      toast(`${t.sp.name}: ${Math.round(t.g * 100)}% grown. ${t.sp.rarity}.`, offer(t, 'tree'), 5000);
+      const rest = t.g < 1 && curSeason() === 3 ? ' Resting until spring.' : '';
+      toast(`${t.sp.name}: ${Math.round(t.g * 100)}% grown. ${t.sp.rarity}.${rest}`, offer(t, 'tree'), 5000);
     } else if (o && o.userData.decor) {
       toast(`${o.userData.decor.d.name}. Visitors love it.`, offer(o.userData.decor, 'decor'), 5000);
     }

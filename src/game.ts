@@ -1,11 +1,12 @@
 import * as THREE from 'three';
 import { $ } from './dom';
 import { CAT_EVERY, RARITY, SEASONS, SEASON_LEN, SPECIES, TICKET } from './data';
+import { growStep } from './growth';
 import { askPersist, load, save, state } from './save';
 import { hemi, renderFrame, scene, sun } from './render';
 import { lerpCol, lerpNum } from './util';
 import { PAL, PART_O, PART_V, PN, SUN_I, W, pGeo, pMat, pPos, pSeed, points } from './world';
-import { addTree, growthScale, trees } from './trees';
+import { addTree, ageTrees, growthScale, trees } from './trees';
 import { DM, FLOWER_C, addDecor, decors } from './decor';
 import { takeDucksDirty } from './water';
 import { people, spawnVisitor, updatePeople, updateSocial } from './people';
@@ -63,7 +64,7 @@ export function applySeason(ph, t) {
 export function updateTrees(dt, t) {
   for (const tr of trees) {
     if (tr.g < 1) {
-      tr.g = Math.min(1, tr.g + dt / RARITY[tr.sp.rarity].grow);
+      tr.g = growStep(tr.g, tr.sp.rarity, state.season, dt);
       tr.group.scale.setScalar(growthScale(tr.g));
     }
     const fs = tr.sp.folScale;
@@ -154,21 +155,35 @@ export function loop(now) {
 
 /* ---------- boot ---------- */
 export const AWAY_RATE = 0.1; // seasons move at a tenth of normal speed while you're away
+/** Move the seasons on for sec seconds away, growing the trees through them; what changed. */
 export function driftSeasons(sec) {
-  if (!(sec > 5)) return 0;
+  if (!(sec > 5)) return { adv: 0, grew: 0, grown: 0 };
   const adv = Math.min(sec * AWAY_RATE, SEASON_LEN * 4);
+  const aged = ageTrees(state.season, adv);
   state.season = (state.season + adv) % (SEASON_LEN * 4);
-  return adv;
+  return { adv, ...aged };
+}
+/** The note on coming back: how far the seasons went, and what the trees did meanwhile. */
+export function awayNote({ adv, grew, grown }) {
+  if (adv < 60) return '';
+  const growth =
+    grew === 1
+      ? ` and a tree grew${grown ? ' to full size' : ''}`
+      : grew
+        ? ` and your trees grew${grown ? `, ${grown === grew ? 'all' : grown} of them to full size` : ''}`
+        : '';
+  return `While you were away, the seasons drifted on by ${Math.round(adv / 60)} min${growth}.`;
 }
 export const had = load();
-export const awayAdv = had && state.savedAt ? driftSeasons((Date.now() - state.savedAt) / 1000) : 0;
 (state.trees || []).forEach(t => addTree(t.s, t.x, t.z, t.g, t.seed));
 (state.decor || []).forEach(d => addDecor(d.d, d.x, d.z, d.r));
+export const away =
+  had && state.savedAt ? driftSeasons((Date.now() - state.savedAt) / 1000) : driftSeasons(0);
 if (had && state.started) {
   $('#intro').style.display = 'none';
   running = true;
-  const extra =
-    awayAdv >= 60 ? ` While you were away, the seasons drifted on by ${Math.round(awayAdv / 60)} min.` : '';
+  const note = awayNote(away),
+    extra = note ? ' ' + note : '';
   // opening a share link, the welcome is for the garden being visited (openSharedLink, below)
   if (!location.hash.startsWith('#g='))
     toast(
@@ -192,11 +207,10 @@ document.addEventListener('visibilitychange', () => {
     hiddenAt = Date.now();
     save();
   } else if (hiddenAt) {
-    const adv = running ? driftSeasons((Date.now() - hiddenAt) / 1000) : 0;
+    const note = running ? awayNote(driftSeasons((Date.now() - hiddenAt) / 1000)) : '';
     hiddenAt = 0;
     last = performance.now();
-    if (adv >= 60)
-      toast(`While you were away, the seasons drifted on by ${Math.round(adv / 60)} min.`, null, 5000);
+    if (note) toast(note, null, 5000);
   }
 });
 refreshHud(true);

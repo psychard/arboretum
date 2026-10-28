@@ -2,9 +2,12 @@
 
 A garden game for phones, painted as if in oils. Buy trees and decorations,
 tap the meadow to plant them, and sell $25 tickets to the visitors who come to
-look. Trees grow while you play, the four seasons turn slowly (and keep turning,
-more slowly still, while you're away), and the nursery's stock changes with
-them. There is a grey cat.
+look. The four seasons turn slowly (and keep turning, more slowly still, while
+you're away), and the nursery's stock changes with them. Trees grow with the
+calendar, so they grow through the time away too: fastest in the spring flush,
+slowing in autumn, resting in winter, and slowing as they near full size, which
+takes half a garden year for a common tree and nearly two for a legendary one
+(`src/growth.ts`). There is a grey cat.
 
 Play it at **[arboretum.psychard.com](https://arboretum.psychard.com/)**.
 

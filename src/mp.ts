@@ -4,7 +4,7 @@ import { DC, SEASON_LEN, SP } from './data';
 import { save, state } from './save';
 import { camera, scene } from './render';
 import { freeGeo } from './util';
-import { addTree, treeRoot, trees } from './trees';
+import { addTree, ageTrees, treeRoot, trees } from './trees';
 import { addDecor, decorRoot, decors } from './decor';
 import { walkRoute, waterChanged } from './water';
 import { clearPeople, makePerson } from './people';
@@ -436,7 +436,10 @@ export function leaveVisit(silent?) {
     decorRoot.add(d.group);
     decors.push(d);
   });
-  state.season = (v.stash.season + (Date.now() - v.stash.start) / 1000) % (SEASON_LEN * 4);
+  // the home garden's year went on meanwhile, and its trees grew through it
+  const gone = (Date.now() - v.stash.start) / 1000;
+  ageTrees(v.stash.season, gone);
+  state.season = (v.stash.season + gone) % (SEASON_LEN * 4);
   waterChanged();
   MP.wasHere = new Set();
   setVisitUi();
