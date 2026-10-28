@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import { $ } from './dom';
 import { CAT_EVERY, RARITY, SEASONS, SEASON_LEN, SPECIES, TICKET } from './data';
-import { growStep } from './growth';
+import { YEAR, growStep } from './growth';
 import { askPersist, load, save, state } from './save';
 import { hemi, renderFrame, scene, sun } from './render';
 import { lerpCol, lerpNum } from './util';
@@ -163,16 +163,26 @@ export function driftSeasons(sec) {
   state.season = (state.season + adv) % (SEASON_LEN * 4);
   return { adv, ...aged };
 }
+/** How long adv seconds of the garden's year is, in its own months (and weeks, four to a month). */
+export function gardenTime(adv) {
+  const months = Math.round(adv / (YEAR / 12)),
+    weeks = Math.round(adv / (YEAR / 48));
+  if (adv >= YEAR) return 'a whole year';
+  if (months >= 1) return months === 1 ? 'a month' : `${months} months`;
+  if (weeks >= 1) return weeks === 1 ? 'a week' : `${weeks} weeks`;
+  return '';
+}
 /** The note on coming back: how far the seasons went, and what the trees did meanwhile. */
 export function awayNote({ adv, grew, grown }) {
-  if (adv < 60) return '';
+  const span = gardenTime(adv);
+  if (!span) return '';
   const growth =
     grew === 1
       ? ` and a tree grew${grown ? ' to full size' : ''}`
       : grew
-        ? ` and your trees grew${grown ? `, ${grown === grew ? 'all' : grown} of them to full size` : ''}`
+        ? ` and your trees grew${grown ? `, ${grown === grew ? 'all' : grown === 1 ? 'one' : grown} of them to full size` : ''}`
         : '';
-  return `While you were away, the seasons drifted on by ${Math.round(adv / 60)} min${growth}.`;
+  return `While you were away, the seasons drifted on by ${span}${growth}.`;
 }
 export const had = load();
 (state.trees || []).forEach(t => addTree(t.s, t.x, t.z, t.g, t.seed));
